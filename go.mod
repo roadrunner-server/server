@@ -3,7 +3,7 @@ module github.com/roadrunner-server/server/v2
 go 1.17
 
 require (
-	github.com/roadrunner-server/api/v2 v2.8.0-rc.1
+	github.com/roadrunner-server/api/v2 v2.8.0-rc.3
 	github.com/roadrunner-server/errors v1.1.1
 	github.com/roadrunner-server/sdk/v2 v2.8.0-rc.3
 	go.uber.org/zap v1.20.0
