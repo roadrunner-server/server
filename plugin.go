@@ -33,6 +33,12 @@ const (
 
 	// RrRPC env variable key (internal) if the RPC presents
 	RrRPC string = "RR_RPC"
+
+	// internal
+	delim string = "://"
+	unix  string = "unix"
+	tcp   string = "tcp"
+	pipes string = "pipes"
 )
 
 // Plugin manages worker
@@ -189,7 +195,13 @@ func (p *Plugin) NewWorkerPool(ctx context.Context, opt *pool.Config, env map[st
 	p.Lock()
 	defer p.Unlock()
 
-	pl, err := pool.NewStaticPool(ctx, p.CmdFactory(env), p.factory, opt, pool.WithLogger(p.log))
+	options := make([]pool.Options, 0, 2)
+	options = append(options, pool.WithLogger(p.log))
+	if p.cfg.Relay == pipes || p.cfg.Relay == "" {
+		options = append(options, pool.UseParallelAlloc())
+	}
+
+	pl, err := pool.NewStaticPool(ctx, p.CmdFactory(env), p.factory, opt, options...)
 	if err != nil {
 		return nil, err
 	}
@@ -201,11 +213,11 @@ func (p *Plugin) NewWorkerPool(ctx context.Context, opt *pool.Config, env map[st
 // creates relay and worker factory.
 func initFactory(log *zap.Logger, relay string, timeout time.Duration) (ipc.Factory, error) {
 	const op = errors.Op("server_plugin_init_factory")
-	if relay == "" || relay == "pipes" {
+	if relay == "" || relay == pipes {
 		return pipe.NewPipeFactory(log), nil
 	}
 
-	dsn := strings.Split(relay, "://")
+	dsn := strings.Split(relay, delim)
 	if len(dsn) != 2 {
 		return nil, errors.E(op, errors.Network, errors.Str("invalid DSN (tcp://:6001, unix://file.sock)"))
 	}
@@ -217,9 +229,9 @@ func initFactory(log *zap.Logger, relay string, timeout time.Duration) (ipc.Fact
 
 	switch dsn[0] {
 	// sockets group
-	case "unix":
+	case unix:
 		return socket.NewSocketServer(lsn, timeout, log), nil
-	case "tcp":
+	case tcp:
 		return socket.NewSocketServer(lsn, timeout, log), nil
 	default:
 		return nil, errors.E(op, errors.Network, errors.Str("invalid DSN (tcp://:6001, unix://file.sock)"))
