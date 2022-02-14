@@ -195,13 +195,7 @@ func (p *Plugin) NewWorkerPool(ctx context.Context, opt *pool.Config, env map[st
 	p.Lock()
 	defer p.Unlock()
 
-	options := make([]pool.Options, 0, 2)
-	options = append(options, pool.WithLogger(p.log))
-	if p.cfg.Relay == pipes || p.cfg.Relay == "" {
-		options = append(options, pool.UseParallelAlloc())
-	}
-
-	pl, err := pool.NewStaticPool(ctx, p.CmdFactory(env), p.factory, opt, options...)
+	pl, err := pool.NewStaticPool(ctx, p.CmdFactory(env), p.factory, opt, pool.WithLogger(p.log))
 	if err != nil {
 		return nil, err
 	}
