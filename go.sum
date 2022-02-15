@@ -192,6 +192,8 @@ github.com/roadrunner-server/goridge/v3 v3.3.1 h1:IYdm+smDfKl09AfFgKJeSNpSTp7KTg
 github.com/roadrunner-server/goridge/v3 v3.3.1/go.mod h1:f7SPSt9HUw5kbCc6Ofk4eEUU1xh2qHf/NznrTaW+aLA=
 github.com/roadrunner-server/sdk/v2 v2.9.0 h1:dTB5275iv2oFJtiC5c0K72VJNYqEFO8iEtOmRAXAJw4=
 github.com/roadrunner-server/sdk/v2 v2.9.0/go.mod h1:rDLsNXHdpbPGkHIVA7JoLEIHlFc6ydCwOsOpGdfuYfI=
+github.com/roadrunner-server/sdk/v2 v2.9.1 h1:TOIOLCWQ5kenQgg3XnFqgCXnTsHrPqO/kp9RgIWW/wI=
+github.com/roadrunner-server/sdk/v2 v2.9.1/go.mod h1:rDLsNXHdpbPGkHIVA7JoLEIHlFc6ydCwOsOpGdfuYfI=
 github.com/roadrunner-server/tcplisten v1.1.1 h1:uVJVdg/zaasD2A4Mg+GyMlsUy2nLp9ADKec/REzql9Y=
 github.com/roadrunner-server/tcplisten v1.1.1/go.mod h1:2MjzsggdgxCca4p2k3YJdWdo/QnQehiOTy0knlE226c=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
