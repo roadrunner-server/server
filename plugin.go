@@ -237,11 +237,11 @@ func (p *Plugin) NewWorker(ctx context.Context, env map[string]string) (worker.B
 }
 
 // NewWorkerPool issues new worker pool.
-func (p *Plugin) NewWorkerPool(ctx context.Context, cfg interface{}, env map[string]string, log *zap.Logger) (pool.Pool, error) {
+func (p *Plugin) NewWorkerPool(ctx context.Context, cfg interface{}, env map[string]string, _ *zap.Logger) (pool.Pool, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	pl, err := poolImpl.NewStaticPool(ctx, p.customCmd(env), p.factory, cfg, log)
+	pl, err := poolImpl.NewStaticPool(ctx, p.customCmd(env), p.factory, cfg, p.log)
 	if err != nil {
 		return nil, err
 	}
