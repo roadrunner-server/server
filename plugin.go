@@ -9,16 +9,17 @@ import (
 	"sync"
 	"time"
 
+	"github.com/roadrunner-server/api/v2/ipc"
 	"github.com/roadrunner-server/errors"
-	"github.com/roadrunner-server/sdk/v2/ipc"
+	pipesImpl "github.com/roadrunner-server/sdk/v2/ipc/pipe"
 	"go.uber.org/zap"
 
 	"github.com/roadrunner-server/api/v2/plugins/config"
-	"github.com/roadrunner-server/sdk/v2/ipc/pipe"
-	"github.com/roadrunner-server/sdk/v2/ipc/socket"
-	"github.com/roadrunner-server/sdk/v2/pool"
+	"github.com/roadrunner-server/api/v2/pool"
+	"github.com/roadrunner-server/api/v2/worker"
+	socketImpl "github.com/roadrunner-server/sdk/v2/ipc/socket"
+	poolImpl "github.com/roadrunner-server/sdk/v2/pool"
 	"github.com/roadrunner-server/sdk/v2/utils"
-	"github.com/roadrunner-server/sdk/v2/worker"
 )
 
 const (
@@ -187,12 +188,12 @@ func (p *Plugin) customCmd(env map[string]string) func(command string) *exec.Cmd
 		var cmd *exec.Cmd
 
 		preparedCmd := make([]string, 0, 10)
-		splitCmd := append(preparedCmd, strings.Split(command, " ")...)
+		preparedCmd = append(preparedCmd, strings.Split(command, " ")...)
 
-		if len(splitCmd) == 1 {
-			cmd = exec.Command(splitCmd[0]) //nolint:gosec
+		if len(preparedCmd) == 1 {
+			cmd = exec.Command(preparedCmd[0]) //nolint:gosec
 		} else {
-			cmd = exec.Command(splitCmd[0], splitCmd[1:]...) //nolint:gosec
+			cmd = exec.Command(preparedCmd[0], preparedCmd[1:]...) //nolint:gosec
 		}
 
 		// copy prepared envs
@@ -222,7 +223,7 @@ func (p *Plugin) customCmd(env map[string]string) func(command string) *exec.Cmd
 }
 
 // NewWorker issues new standalone worker.
-func (p *Plugin) NewWorker(ctx context.Context, env map[string]string) (*worker.Process, error) {
+func (p *Plugin) NewWorker(ctx context.Context, env map[string]string) (worker.BaseProcess, error) {
 	const op = errors.Op("server_plugin_new_worker")
 
 	spawnCmd := p.CmdFactory(env)
@@ -236,15 +237,11 @@ func (p *Plugin) NewWorker(ctx context.Context, env map[string]string) (*worker.
 }
 
 // NewWorkerPool issues new worker pool.
-func (p *Plugin) NewWorkerPool(ctx context.Context, opt *pool.Config, env map[string]string, opts ...pool.Options) (pool.Pool, error) {
+func (p *Plugin) NewWorkerPool(ctx context.Context, cfg interface{}, env map[string]string, log *zap.Logger) (pool.Pool, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	options := make([]pool.Options, 0, 10)
-	options = append(options, opts...)
-	options = append(options, pool.WithLogger(p.log))
-
-	pl, err := pool.NewStaticPool(ctx, p.customCmd(env), p.factory, opt, options...)
+	pl, err := poolImpl.NewStaticPool(ctx, p.customCmd(env), p.factory, cfg, log)
 	if err != nil {
 		return nil, err
 	}
@@ -257,7 +254,7 @@ func (p *Plugin) NewWorkerPool(ctx context.Context, opt *pool.Config, env map[st
 func initFactory(log *zap.Logger, relay string, timeout time.Duration) (ipc.Factory, error) {
 	const op = errors.Op("server_plugin_init_factory")
 	if relay == "" || relay == pipes {
-		return pipe.NewPipeFactory(log), nil
+		return pipesImpl.NewPipeFactory(log), nil
 	}
 
 	dsn := strings.Split(relay, delim)
@@ -273,9 +270,9 @@ func initFactory(log *zap.Logger, relay string, timeout time.Duration) (ipc.Fact
 	switch dsn[0] {
 	// sockets group
 	case unix:
-		return socket.NewSocketServer(lsn, timeout, log), nil
+		return socketImpl.NewSocketServer(lsn, timeout, log), nil
 	case tcp:
-		return socket.NewSocketServer(lsn, timeout, log), nil
+		return socketImpl.NewSocketServer(lsn, timeout, log), nil
 	default:
 		return nil, errors.E(op, errors.Network, errors.Str("invalid DSN (tcp://:6001, unix://file.sock)"))
 	}
