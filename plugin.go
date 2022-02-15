@@ -43,7 +43,7 @@ const (
 
 // Plugin manages worker
 type Plugin struct {
-	sync.Mutex
+	mu sync.Mutex
 
 	cfg          *Config
 	rpcCfg       *RPCConfig
@@ -125,8 +125,8 @@ func (p *Plugin) Serve() chan error {
 
 // Stop used to close chosen in config factory
 func (p *Plugin) Stop() error {
-	p.Lock()
-	defer p.Unlock()
+	p.mu.Lock()
+	defer p.mu.Unlock()
 
 	// destroy all pools
 	for i := 0; i < len(p.pools); i++ {
@@ -140,7 +140,7 @@ func (p *Plugin) Stop() error {
 	return p.factory.Close()
 }
 
-// CmdFactory provides worker command factory associated with given context.
+// CmdFactory provides worker command factory associated with given context
 func (p *Plugin) CmdFactory(env map[string]string) func() *exec.Cmd {
 	return func() *exec.Cmd {
 		var cmd *exec.Cmd
@@ -176,6 +176,51 @@ func (p *Plugin) CmdFactory(env map[string]string) func() *exec.Cmd {
 	}
 }
 
+// customCmd used as and enhancement for the CmdFactory to use with a custom command string (used by default)
+func (p *Plugin) customCmd(env map[string]string) func(command string) *exec.Cmd {
+	return func(command string) *exec.Cmd {
+		// if no command provided, use the server's one
+		if command == "" {
+			command = p.cfg.Command
+		}
+
+		var cmd *exec.Cmd
+
+		preparedCmd := make([]string, 0, 10)
+		splitCmd := append(preparedCmd, strings.Split(command, " ")...)
+
+		if len(splitCmd) == 1 {
+			cmd = exec.Command(splitCmd[0]) //nolint:gosec
+		} else {
+			cmd = exec.Command(splitCmd[0], splitCmd[1:]...) //nolint:gosec
+		}
+
+		// copy prepared envs
+		cmd.Env = make([]string, len(p.preparedEnvs))
+		copy(cmd.Env, p.preparedEnvs)
+
+		// append external envs
+		if len(env) > 0 {
+			for k, v := range env {
+				cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", strings.ToUpper(k), v))
+			}
+		}
+
+		utils.IsolateProcess(cmd)
+		// if user is not empty, and OS is linux or macos
+		// execute php worker from that particular user
+		if p.cfg.User != "" {
+			err := utils.ExecuteFromUser(cmd, p.cfg.User)
+			if err != nil {
+				p.log.Panic("can't execute command from the user", zap.String("user", p.cfg.User), zap.Error(err))
+				return nil
+			}
+		}
+
+		return cmd
+	}
+}
+
 // NewWorker issues new standalone worker.
 func (p *Plugin) NewWorker(ctx context.Context, env map[string]string) (*worker.Process, error) {
 	const op = errors.Op("server_plugin_new_worker")
@@ -191,11 +236,15 @@ func (p *Plugin) NewWorker(ctx context.Context, env map[string]string) (*worker.
 }
 
 // NewWorkerPool issues new worker pool.
-func (p *Plugin) NewWorkerPool(ctx context.Context, opt *pool.Config, env map[string]string, _ ...pool.Options) (pool.Pool, error) {
-	p.Lock()
-	defer p.Unlock()
+func (p *Plugin) NewWorkerPool(ctx context.Context, opt *pool.Config, env map[string]string, opts ...pool.Options) (pool.Pool, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
 
-	pl, err := pool.NewStaticPool(ctx, p.CmdFactory(env), p.factory, opt, pool.WithLogger(p.log))
+	options := make([]pool.Options, 0, 10)
+	options = append(options, opts...)
+	options = append(options, pool.WithLogger(p.log))
+
+	pl, err := pool.NewStaticPool(ctx, p.customCmd(env), p.factory, opt, options...)
 	if err != nil {
 		return nil, err
 	}
