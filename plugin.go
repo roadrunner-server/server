@@ -91,7 +91,7 @@ func (p *Plugin) Init(cfg config.Configurer, log *zap.Logger) error {
 	// set env variables from the config
 	if len(p.cfg.Env) > 0 {
 		for k, v := range p.cfg.Env {
-			p.preparedEnvs = append(p.preparedEnvs, fmt.Sprintf("%s=%s", strings.ToUpper(k), v))
+			p.preparedEnvs = append(p.preparedEnvs, fmt.Sprintf("%s=%s", strings.ToUpper(k), os.Expand(v, os.Getenv)))
 		}
 	}
 

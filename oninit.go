@@ -66,7 +66,7 @@ func (p *Plugin) createProcess(env map[string]string, cmd string) *exec.Cmd {
 	// set env variables from the config
 	if len(env) > 0 {
 		for k, v := range env {
-			command.Env = append(command.Env, fmt.Sprintf("%s=%s", strings.ToUpper(k), v))
+			command.Env = append(command.Env, fmt.Sprintf("%s=%s", strings.ToUpper(k), os.Expand(v, os.Getenv)))
 		}
 	}
 
