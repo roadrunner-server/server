@@ -3,7 +3,7 @@ module github.com/roadrunner-server/server/v2
 go 1.18
 
 require (
-	github.com/roadrunner-server/api/v2 v2.13.0
+	github.com/roadrunner-server/api/v2 v2.14.0
 	github.com/roadrunner-server/errors v1.1.2
 	github.com/roadrunner-server/sdk/v2 v2.11.1
 	github.com/spf13/viper v1.10.1
@@ -15,7 +15,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
-	github.com/goccy/go-json v0.9.5 // indirect
+	github.com/goccy/go-json v0.9.6 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
@@ -36,7 +36,7 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20220318055525-2edf467146b5 // indirect
+	golang.org/x/sys v0.0.0-20220319134239-a9b59b0215f8 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
