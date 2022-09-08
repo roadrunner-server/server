@@ -3,9 +3,9 @@ module github.com/roadrunner-server/server/v2
 go 1.19
 
 require (
-	github.com/roadrunner-server/api/v2 v2.22.2-rc.1
+	github.com/roadrunner-server/api/v2 v2.23.0-rc.2
 	github.com/roadrunner-server/errors v1.2.0
-	github.com/roadrunner-server/sdk/v2 v2.19.0-rc.1
+	github.com/roadrunner-server/sdk/v2 v2.19.0-rc.3
 	github.com/spf13/viper v1.13.0
 	github.com/stretchr/testify v1.8.0
 	go.uber.org/zap v1.23.0
@@ -23,7 +23,7 @@ require (
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.5 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/roadrunner-server/goridge/v3 v3.5.2 // indirect
+	github.com/roadrunner-server/goridge/v3 v3.5.3 // indirect
 	github.com/roadrunner-server/tcplisten v1.2.0 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
 	github.com/spf13/afero v1.9.2 // indirect
