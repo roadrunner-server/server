@@ -9,18 +9,38 @@ import (
 	"sync"
 	"time"
 
-	"github.com/roadrunner-server/api/v2/ipc"
 	"github.com/roadrunner-server/errors"
-	pipesImpl "github.com/roadrunner-server/sdk/v2/ipc/pipe"
+	"github.com/roadrunner-server/sdk/v3/ipc/pipe"
+	"github.com/roadrunner-server/sdk/v3/ipc/socket"
+	"github.com/roadrunner-server/sdk/v3/payload"
 	"go.uber.org/zap"
 
-	"github.com/roadrunner-server/api/v2/plugins/config"
-	"github.com/roadrunner-server/api/v2/pool"
-	"github.com/roadrunner-server/api/v2/worker"
-	socketImpl "github.com/roadrunner-server/sdk/v2/ipc/socket"
-	poolImpl "github.com/roadrunner-server/sdk/v2/pool"
-	"github.com/roadrunner-server/sdk/v2/utils"
+	"github.com/roadrunner-server/sdk/v3/pool"
+	staticPool "github.com/roadrunner-server/sdk/v3/pool/static_pool"
+	"github.com/roadrunner-server/sdk/v3/utils"
+	"github.com/roadrunner-server/sdk/v3/worker"
 )
+
+// Pool managed set of inner worker processes.
+type Pool interface {
+	// GetConfig returns pool configuration.
+	GetConfig() *pool.Config
+
+	// Workers returns worker list associated with the pool.
+	Workers() (workers []*worker.Process)
+
+	// RemoveWorker removes worker from the pool.
+	RemoveWorker(worker *worker.Process) error
+
+	// Exec payload
+	Exec(ctx context.Context, p *payload.Payload) (*payload.Payload, error)
+
+	// Reset kill all workers inside the watcher and replaces with new
+	Reset(ctx context.Context) error
+
+	// Destroy all underlying stack (but let them to complete the task).
+	Destroy(ctx context.Context)
+}
 
 const (
 	// PluginName for the server
@@ -52,13 +72,21 @@ type Plugin struct {
 	preparedEnvs []string
 
 	log     *zap.Logger
-	factory ipc.Factory
+	factory pool.Factory
 
-	pools []pool.Pool
+	pools []Pool
+}
+
+type Configurer interface {
+	// UnmarshalKey takes a single key and unmarshal it into a Struct.
+	UnmarshalKey(name string, out any) error
+
+	// Has checks if config section exists.
+	Has(name string) bool
 }
 
 // Init application provider.
-func (p *Plugin) Init(cfg config.Configurer, log *zap.Logger) error {
+func (p *Plugin) Init(cfg Configurer, log *zap.Logger) error {
 	const op = errors.Op("server_plugin_init")
 	if !cfg.Has(PluginName) {
 		return errors.E(op, errors.Disabled)
@@ -95,7 +123,7 @@ func (p *Plugin) Init(cfg config.Configurer, log *zap.Logger) error {
 		}
 	}
 
-	p.pools = make([]pool.Pool, 0, 4)
+	p.pools = make([]Pool, 0, 4)
 
 	p.factory, err = initFactory(p.log, p.cfg.Relay, p.cfg.RelayTimeout)
 	if err != nil {
@@ -225,7 +253,7 @@ func (p *Plugin) customCmd(env map[string]string) func(command string) *exec.Cmd
 }
 
 // NewWorker issues new standalone worker.
-func (p *Plugin) NewWorker(ctx context.Context, env map[string]string) (worker.BaseProcess, error) {
+func (p *Plugin) NewWorker(ctx context.Context, env map[string]string) (*worker.Process, error) {
 	const op = errors.Op("server_plugin_new_worker")
 
 	spawnCmd := p.CmdFactory(env)
@@ -238,25 +266,26 @@ func (p *Plugin) NewWorker(ctx context.Context, env map[string]string) (worker.B
 	return w, nil
 }
 
-// NewWorkerPool issues new worker pool.
-func (p *Plugin) NewWorkerPool(ctx context.Context, cfg interface{}, env map[string]string, _ *zap.Logger) (pool.Pool, error) {
+// NewPool issues new worker pool.
+func (p *Plugin) NewPool(ctx context.Context, cfg *pool.Config, env map[string]string, _ *zap.Logger) (*staticPool.Pool, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	pl, err := poolImpl.NewStaticPool(ctx, p.customCmd(env), p.factory, cfg, p.log)
+	pl, err := staticPool.NewPool(ctx, p.customCmd(env), p.factory, cfg, p.log)
 	if err != nil {
 		return nil, err
 	}
+
 	p.pools = append(p.pools, pl)
 
 	return pl, nil
 }
 
 // creates relay and worker factory.
-func initFactory(log *zap.Logger, relay string, timeout time.Duration) (ipc.Factory, error) {
+func initFactory(log *zap.Logger, relay string, timeout time.Duration) (pool.Factory, error) {
 	const op = errors.Op("server_plugin_init_factory")
 	if relay == "" || relay == pipes {
-		return pipesImpl.NewPipeFactory(log), nil
+		return pipe.NewPipeFactory(log), nil
 	}
 
 	dsn := strings.Split(relay, delim)
@@ -272,9 +301,9 @@ func initFactory(log *zap.Logger, relay string, timeout time.Duration) (ipc.Fact
 	switch dsn[0] {
 	// sockets group
 	case unix:
-		return socketImpl.NewSocketServer(lsn, timeout, log), nil
+		return socket.NewSocketServer(lsn, timeout, log), nil
 	case tcp:
-		return socketImpl.NewSocketServer(lsn, timeout, log), nil
+		return socket.NewSocketServer(lsn, timeout, log), nil
 	default:
 		return nil, errors.E(op, errors.Network, errors.Str("invalid DSN (tcp://:6001, unix://file.sock)"))
 	}
