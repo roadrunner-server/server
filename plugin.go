@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/user"
 	"strconv"
 	"strings"
 	"sync"
@@ -210,7 +211,13 @@ func (p *Plugin) CmdFactory(env map[string]string) func() *exec.Cmd {
 
 // UID returns a user id (if specified by user)
 func (p *Plugin) UID() int {
-	usrI32, err := strconv.ParseInt(p.cfg.User, 10, 32)
+	usr, err := user.Lookup(p.cfg.User)
+	if err != nil {
+		p.log.Error("failed to get user", zap.String("id", p.cfg.User))
+		return 0
+	}
+
+	usrI32, err := strconv.ParseInt(usr.Uid, 10, 32)
 	if err != nil {
 		p.log.Error("failed to parse user id", zap.String("id", p.cfg.User))
 		return 0
@@ -221,7 +228,13 @@ func (p *Plugin) UID() int {
 
 // GID returns a group id (if specified by user)
 func (p *Plugin) GID() int {
-	grI32, err := strconv.ParseInt(p.cfg.Group, 10, 32)
+	usr, err := user.Lookup(p.cfg.User)
+	if err != nil {
+		p.log.Error("failed to get user", zap.String("id", p.cfg.User))
+		return 0
+	}
+
+	grI32, err := strconv.ParseInt(usr.Gid, 10, 32)
 	if err != nil {
 		p.log.Error("failed to parse group id", zap.String("id", p.cfg.Group))
 		return 0
