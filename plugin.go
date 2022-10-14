@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -205,6 +206,28 @@ func (p *Plugin) CmdFactory(env map[string]string) func() *exec.Cmd {
 
 		return cmd
 	}
+}
+
+// UID returns a user id (if specified by user)
+func (p *Plugin) UID() int {
+	usrI32, err := strconv.ParseInt(p.cfg.User, 10, 32)
+	if err != nil {
+		p.log.Error("failed to parse user id", zap.String("id", p.cfg.User))
+		return 0
+	}
+
+	return int(usrI32)
+}
+
+// GID returns a group id (if specified by user)
+func (p *Plugin) GID() int {
+	grI32, err := strconv.ParseInt(p.cfg.Group, 10, 32)
+	if err != nil {
+		p.log.Error("failed to parse group id", zap.String("id", p.cfg.Group))
+		return 0
+	}
+
+	return int(grI32)
 }
 
 // customCmd used as and enhancement for the CmdFactory to use with a custom command string (used by default)
