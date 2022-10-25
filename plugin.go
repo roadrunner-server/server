@@ -211,6 +211,10 @@ func (p *Plugin) CmdFactory(env map[string]string) func() *exec.Cmd {
 
 // UID returns a user id (if specified by user)
 func (p *Plugin) UID() int {
+	if p.cfg.User == "" {
+		return 0
+	}
+
 	usr, err := user.Lookup(p.cfg.User)
 	if err != nil {
 		p.log.Error("failed to get user", zap.String("id", p.cfg.User))
@@ -228,6 +232,10 @@ func (p *Plugin) UID() int {
 
 // GID returns a group id (if specified by user)
 func (p *Plugin) GID() int {
+	if p.cfg.User == "" {
+		return 0
+	}
+
 	usr, err := user.Lookup(p.cfg.User)
 	if err != nil {
 		p.log.Error("failed to get user", zap.String("id", p.cfg.User))
