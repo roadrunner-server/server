@@ -10,6 +10,20 @@ import (
 	"go.uber.org/zap"
 )
 
+type TestLogger struct {
+	log *zap.Logger
+}
+
+func NewTestLogger(log *zap.Logger) *TestLogger {
+	return &TestLogger{
+		log: log,
+	}
+}
+
+func (tl *TestLogger) NamedLogger(string) *zap.Logger {
+	return tl.log
+}
+
 func TestCommandUnknownUser(t *testing.T) {
 	require.Panics(t, func() {
 		log, _ := zap.NewDevelopment()
@@ -79,7 +93,7 @@ func TestEnv(t *testing.T) {
 	cfg, err := test.InitMockCfg(v)
 	require.NoError(t, err)
 
-	err = p.Init(cfg, log)
+	err = p.Init(cfg, NewTestLogger(log))
 	require.NoError(t, err)
 
 	for i := 0; i < len(p.preparedEnvs); i++ {
@@ -120,7 +134,7 @@ func TestEnv2(t *testing.T) {
 	cfg, err := test.InitMockCfg(v)
 	require.NoError(t, err)
 
-	err = p.Init(cfg, log)
+	err = p.Init(cfg, NewTestLogger(log))
 	require.NoError(t, err)
 
 	for i := 0; i < len(p.preparedEnvs); i++ {
@@ -161,7 +175,7 @@ func TestEnv3(t *testing.T) {
 	cfg, err := test.InitMockCfg(v)
 	require.NoError(t, err)
 
-	err = p.Init(cfg, log)
+	err = p.Init(cfg, NewTestLogger(log))
 	require.NoError(t, err)
 
 	for i := 0; i < len(p.preparedEnvs); i++ {
@@ -191,7 +205,7 @@ func TestEnv4(t *testing.T) {
 	cfg, err := test.InitMockCfg(v)
 	require.NoError(t, err)
 
-	err = p.Init(cfg, log)
+	err = p.Init(cfg, NewTestLogger(log))
 	require.NoError(t, err)
 
 	for i := 0; i < len(p.preparedEnvs); i++ {

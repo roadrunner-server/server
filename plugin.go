@@ -158,7 +158,7 @@ func (p *Plugin) Serve() chan error {
 }
 
 // Stop used to close chosen in config factory
-func (p *Plugin) Stop(ctx context.Context) error {
+func (p *Plugin) Stop(context.Context) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
