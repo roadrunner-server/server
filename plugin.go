@@ -64,6 +64,17 @@ const (
 	pipes string = "pipes"
 )
 
+type Configurer interface {
+	// UnmarshalKey takes a single key and unmarshal it into a Struct.
+	UnmarshalKey(name string, out any) error
+	// Has checks if config section exists.
+	Has(name string) bool
+}
+
+type NamedLogger interface {
+	NamedLogger(name string) *zap.Logger
+}
+
 // Plugin manages worker
 type Plugin struct {
 	mu sync.Mutex
@@ -79,16 +90,8 @@ type Plugin struct {
 	pools []Pool
 }
 
-type Configurer interface {
-	// UnmarshalKey takes a single key and unmarshal it into a Struct.
-	UnmarshalKey(name string, out any) error
-
-	// Has checks if config section exists.
-	Has(name string) bool
-}
-
 // Init application provider.
-func (p *Plugin) Init(cfg Configurer, log *zap.Logger) error {
+func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 	const op = errors.Op("server_plugin_init")
 	if !cfg.Has(PluginName) {
 		return errors.E(op, errors.Disabled)
@@ -110,7 +113,7 @@ func (p *Plugin) Init(cfg Configurer, log *zap.Logger) error {
 	}
 
 	p.log = new(zap.Logger)
-	*p.log = *log
+	p.log = log.NamedLogger(PluginName)
 	p.preparedCmd = append(p.preparedCmd, strings.Split(p.cfg.Command, " ")...)
 
 	p.preparedEnvs = append(os.Environ(), fmt.Sprintf(RrRelay+"=%s", p.cfg.Relay))
@@ -155,7 +158,7 @@ func (p *Plugin) Serve() chan error {
 }
 
 // Stop used to close chosen in config factory
-func (p *Plugin) Stop() error {
+func (p *Plugin) Stop(ctx context.Context) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
