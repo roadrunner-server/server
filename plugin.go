@@ -12,15 +12,15 @@ import (
 	"time"
 
 	"github.com/roadrunner-server/errors"
-	"github.com/roadrunner-server/sdk/v3/ipc/pipe"
-	"github.com/roadrunner-server/sdk/v3/ipc/socket"
-	"github.com/roadrunner-server/sdk/v3/payload"
+	"github.com/roadrunner-server/sdk/v4/ipc/pipe"
+	"github.com/roadrunner-server/sdk/v4/ipc/socket"
+	"github.com/roadrunner-server/sdk/v4/payload"
 	"go.uber.org/zap"
 
-	"github.com/roadrunner-server/sdk/v3/pool"
-	staticPool "github.com/roadrunner-server/sdk/v3/pool/static_pool"
-	"github.com/roadrunner-server/sdk/v3/utils"
-	"github.com/roadrunner-server/sdk/v3/worker"
+	"github.com/roadrunner-server/sdk/v4/pool"
+	staticPool "github.com/roadrunner-server/sdk/v4/pool/static_pool"
+	"github.com/roadrunner-server/sdk/v4/utils"
+	"github.com/roadrunner-server/sdk/v4/worker"
 )
 
 // Pool managed set of inner worker processes.

@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/roadrunner-server/server/v3/test"
+	"github.com/roadrunner-server/server/v4/test"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
