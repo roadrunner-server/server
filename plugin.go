@@ -27,19 +27,14 @@ import (
 type Pool interface {
 	// GetConfig returns pool configuration.
 	GetConfig() *pool.Config
-
 	// Workers returns worker list associated with the pool.
 	Workers() (workers []*worker.Process)
-
 	// RemoveWorker removes worker from the pool.
 	RemoveWorker(worker *worker.Process) error
-
 	// Exec payload
 	Exec(ctx context.Context, p *payload.Payload) (*payload.Payload, error)
-
 	// Reset kill all workers inside the watcher and replaces with new
 	Reset(ctx context.Context) error
-
 	// Destroy all underlying stack (but let them to complete the task).
 	Destroy(ctx context.Context)
 }
@@ -47,15 +42,14 @@ type Pool interface {
 const (
 	// PluginName for the server
 	PluginName string = "server"
-
 	// RPCPluginName is the name of the RPC plugin, should be in sync with rpc/config.go
 	RPCPluginName string = "rpc"
-
 	// RrRelay env variable key (internal)
 	RrRelay string = "RR_RELAY"
-
 	// RrRPC env variable key (internal) if the RPC presents
 	RrRPC string = "RR_RPC"
+	// RrVersion env variable
+	RrVersion string = "RR_VERSION"
 
 	// internal
 	delim string = "://"
@@ -69,6 +63,8 @@ type Configurer interface {
 	UnmarshalKey(name string, out any) error
 	// Has checks if config section exists.
 	Has(name string) bool
+	// RRVersion is the roadrunner current version
+	RRVersion() string
 }
 
 type NamedLogger interface {
@@ -127,6 +123,8 @@ func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 			p.preparedEnvs = append(p.preparedEnvs, fmt.Sprintf("%s=%s", strings.ToUpper(k), os.Expand(v, os.Getenv)))
 		}
 	}
+
+	p.preparedEnvs = append(p.preparedEnvs, fmt.Sprintf("%s=%s", RrVersion, cfg.RRVersion()))
 
 	p.pools = make([]Pool, 0, 4)
 
