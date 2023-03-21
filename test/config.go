@@ -20,19 +20,19 @@ func (c *Config) UnmarshalKey(name string, out interface{}) error {
 	return c.v.UnmarshalKey(name, out)
 }
 
-func (c *Config) Unmarshal(out interface{}) error {
+func (c *Config) Unmarshal(_ interface{}) error {
 	return nil
 }
 
-func (c *Config) Get(name string) interface{} {
+func (c *Config) Get(_ string) interface{} {
 	return nil
 }
 
-func (c *Config) Overwrite(values map[string]interface{}) error {
+func (c *Config) Overwrite(_ map[string]interface{}) error {
 	return nil
 }
 
-func (c *Config) Has(name string) bool {
+func (c *Config) Has(_ string) bool {
 	return true
 }
 
