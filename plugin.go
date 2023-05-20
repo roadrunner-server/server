@@ -160,12 +160,12 @@ func (p *Plugin) Stop(context.Context) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
-	defer cancel()
 	// destroy all pools
 	for i := 0; i < len(p.pools); i++ {
 		if p.pools[i] != nil {
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*p.pools[i].GetConfig().DestroyTimeout)
 			p.pools[i].Destroy(ctx)
+			cancel()
 		}
 	}
 
