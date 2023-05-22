@@ -11,12 +11,28 @@ import (
 	"go.uber.org/zap"
 )
 
-func (p *Plugin) runOnInitCommand() error {
+type command struct {
+	log         *zap.Logger
+	env         map[string]string
+	command     string
+	execTimeout time.Duration
+}
+
+func newCommand(log *zap.Logger, env map[string]string, cmd string, execTimeout time.Duration) *command {
+	return &command{
+		log:         log,
+		env:         env,
+		command:     cmd,
+		execTimeout: execTimeout,
+	}
+}
+
+func (b *command) start() error {
 	const op = errors.Op("server_on_init")
 	stopCh := make(chan struct{}, 1)
 
-	cmd := p.createProcess(p.cfg.OnInit.Env, p.cfg.OnInit.Command)
-	timer := time.NewTimer(p.cfg.OnInit.ExecTimeout)
+	cmd := b.createProcess(b.env, b.command)
+	timer := time.NewTimer(b.execTimeout)
 
 	err := cmd.Start()
 	if err != nil {
@@ -26,7 +42,7 @@ func (p *Plugin) runOnInitCommand() error {
 	go func() {
 		errW := cmd.Wait()
 		if errW != nil {
-			p.log.Error("process wait", zap.Error(errW))
+			b.log.Error("process wait", zap.Error(errW))
 		}
 
 		stopCh <- struct{}{}
@@ -36,7 +52,7 @@ func (p *Plugin) runOnInitCommand() error {
 	case <-timer.C:
 		err = cmd.Process.Kill()
 		if err != nil {
-			p.log.Error("process killed", zap.Error(err))
+			b.log.Error("process killed", zap.Error(err))
 		}
 		return nil
 
@@ -46,13 +62,13 @@ func (p *Plugin) runOnInitCommand() error {
 	}
 }
 
-func (p *Plugin) Write(data []byte) (int, error) {
-	p.log.Info(string(data))
+func (b *command) Write(data []byte) (int, error) {
+	b.log.Info(string(data))
 	return len(data), nil
 }
 
 // create command for the process
-func (p *Plugin) createProcess(env map[string]string, cmd string) *exec.Cmd {
+func (b *command) createProcess(env map[string]string, cmd string) *exec.Cmd {
 	// cmdArgs contain command arguments if the command in form of: php <command> or ls <command> -i -b
 	var cmdArgs []string
 	var command *exec.Cmd
@@ -73,8 +89,8 @@ func (p *Plugin) createProcess(env map[string]string, cmd string) *exec.Cmd {
 	// append system envs
 	command.Env = append(command.Env, os.Environ()...)
 	// redirect stderr and stdout into the Write function of the process.go
-	command.Stderr = p
-	command.Stdout = p
+	command.Stderr = b
+	command.Stdout = b
 
 	return command
 }

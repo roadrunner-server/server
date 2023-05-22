@@ -10,6 +10,10 @@ require (
 	go.uber.org/zap v1.24.0
 )
 
+replace (
+	github.com/roadrunner-server/sdk/v4 => ../../sdk
+)
+
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
