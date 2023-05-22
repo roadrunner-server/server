@@ -4,14 +4,10 @@ go 1.20
 
 require (
 	github.com/roadrunner-server/errors v1.2.0
-	github.com/roadrunner-server/sdk/v4 v4.2.5
+	github.com/roadrunner-server/sdk/v4 v4.2.6
 	github.com/spf13/viper v1.15.0
 	github.com/stretchr/testify v1.8.3
 	go.uber.org/zap v1.24.0
-)
-
-replace (
-	github.com/roadrunner-server/sdk/v4 => ../../sdk
 )
 
 require (
