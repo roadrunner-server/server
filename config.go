@@ -74,7 +74,7 @@ func (cfg *Config) InitDefaults() error {
 		}
 
 		if cfg.AfterInit.ExecTimeout == 0 {
-			cfg.OnInit.ExecTimeout = time.Minute
+			cfg.AfterInit.ExecTimeout = time.Minute
 		}
 	}
 
