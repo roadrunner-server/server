@@ -146,7 +146,7 @@ func (p *Plugin) Serve() chan error {
 	errCh := make(chan error, 1)
 
 	if p.cfg.OnInit != nil {
-		err := p.runOnInitCommand()
+		err := newCommand(p.log, p.cfg.OnInit.Env, p.cfg.OnInit.Command, p.cfg.OnInit.ExecTimeout).start()
 		if err != nil {
 			p.log.Error("on_init was finished with errors", zap.Error(err))
 		}
@@ -316,9 +316,21 @@ func (p *Plugin) NewPool(ctx context.Context, cfg *pool.Config, env map[string]s
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	pl, err := staticPool.NewPool(ctx, p.customCmd(env), p.factory, cfg, p.log)
+	pl, err := staticPool.NewPool(ctx, p.customCmd(env), p.factory, cfg, p.log, nil)
 	if err != nil {
 		return nil, err
+	}
+
+	// we have after init command
+	if p.cfg.AfterInit != nil {
+		if pl.GetConfig().AfterInitCommand != "" {
+			p.cfg.AfterInit.Command = pl.GetConfig().AfterInitCommand
+		}
+
+		err = newCommand(p.log, p.cfg.AfterInit.Env, p.cfg.AfterInit.Command, p.cfg.AfterInit.ExecTimeout).start()
+		if err != nil {
+			p.log.Error("after_init was finished with errors", zap.Error(err))
+		}
 	}
 
 	p.pools = append(p.pools, pl)

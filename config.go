@@ -10,7 +10,10 @@ import (
 // For other section use pointer to distinguish between `empty` and `not present`
 type Config struct {
 	// OnInit configuration
-	OnInit *OnInitConfig `mapstructure:"on_init"`
+	OnInit *InitConfig `mapstructure:"on_init"`
+
+	// AfterInit command to run after pool initialization
+	AfterInit *InitConfig `mapstructure:"after_init"`
 
 	// Command to run as application.
 	Command string `mapstructure:"command"`
@@ -34,7 +37,7 @@ type Config struct {
 	RelayTimeout time.Duration `mapstructure:"relay_timeout"`
 }
 
-type OnInitConfig struct {
+type InitConfig struct {
 	// Command which is started before worker starts
 	Command string `mapstructure:"command"`
 
@@ -63,6 +66,16 @@ func (cfg *Config) InitDefaults() error {
 
 	if cfg.RelayTimeout == 0 {
 		cfg.RelayTimeout = time.Second * 60
+	}
+
+	if cfg.AfterInit != nil {
+		if cfg.AfterInit.Command == "" {
+			return errors.Str("after_init command should not be empty")
+		}
+
+		if cfg.AfterInit.ExecTimeout == 0 {
+			cfg.AfterInit.ExecTimeout = time.Minute
+		}
 	}
 
 	if cfg.OnInit != nil {
