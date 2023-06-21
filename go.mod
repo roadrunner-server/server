@@ -5,8 +5,8 @@ go 1.20
 require (
 	github.com/roadrunner-server/errors v1.2.0
 	github.com/roadrunner-server/sdk/v4 v4.2.6
-	github.com/spf13/viper v1.15.0
-	github.com/stretchr/testify v1.8.3
+	github.com/spf13/viper v1.16.0
+	github.com/stretchr/testify v1.8.4
 	go.uber.org/zap v1.24.0
 )
 
@@ -19,7 +19,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
-	github.com/pelletier/go-toml/v2 v2.0.7 // indirect
+	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/roadrunner-server/goridge/v3 v3.6.2 // indirect
 	github.com/roadrunner-server/tcplisten v1.3.0 // indirect
