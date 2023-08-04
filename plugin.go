@@ -32,7 +32,7 @@ type Pool interface {
 	// RemoveWorker removes worker from the pool.
 	RemoveWorker(worker *worker.Process) error
 	// Exec payload
-	Exec(ctx context.Context, p *payload.Payload) (*payload.Payload, error)
+	Exec(ctx context.Context, p *payload.Payload, stopCh chan struct{}) (chan *staticPool.PExec, error)
 	// Reset kill all workers inside the watcher and replaces with new
 	Reset(ctx context.Context) error
 	// Destroy all underlying stack (but let them to complete the task).
@@ -316,7 +316,7 @@ func (p *Plugin) NewPool(ctx context.Context, cfg *pool.Config, env map[string]s
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	pl, err := staticPool.NewPool(ctx, p.customCmd(env), p.factory, cfg, p.log, nil)
+	pl, err := staticPool.NewPool(ctx, p.customCmd(env), p.factory, cfg, p.log)
 	if err != nil {
 		return nil, err
 	}
