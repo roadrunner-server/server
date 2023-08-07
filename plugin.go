@@ -110,7 +110,18 @@ func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 
 	p.log = new(zap.Logger)
 	p.log = log.NamedLogger(PluginName)
-	p.preparedCmd = append(p.preparedCmd, strings.Split(p.cfg.Command, " ")...)
+
+	// here we may have 2 cases: command declared as a space separated string or as a slice
+	switch len(p.cfg.Command) {
+	// command defined as a space separated string
+	case 1:
+		// we know that the len is 1, so we can safely use the first element
+		p.preparedCmd = append(p.preparedCmd, strings.Split(p.cfg.Command[0], " ")...)
+	default:
+		// we have a slice with a 2 or more elements
+		// first element is the command, the rest are arguments
+		p.preparedCmd = p.cfg.Command
+	}
 
 	p.preparedEnvs = append(os.Environ(), fmt.Sprintf(RrRelay+"=%s", p.cfg.Relay))
 	if p.rpcCfg != nil && p.rpcCfg.Listen != "" {
@@ -180,9 +191,9 @@ func (p *Plugin) CmdFactory(env map[string]string) func() *exec.Cmd {
 		var cmd *exec.Cmd
 
 		if len(p.preparedCmd) == 1 {
-			cmd = exec.Command(p.preparedCmd[0]) //nolint:gosec
+			cmd = exec.Command(p.preparedCmd[0])
 		} else {
-			cmd = exec.Command(p.preparedCmd[0], p.preparedCmd[1:]...) //nolint:gosec
+			cmd = exec.Command(p.preparedCmd[0], p.preparedCmd[1:]...)
 		}
 
 		// copy prepared envs
@@ -253,22 +264,32 @@ func (p *Plugin) GID() int {
 }
 
 // customCmd used as and enhancement for the CmdFactory to use with a custom command string (used by default)
-func (p *Plugin) customCmd(env map[string]string) func(command string) *exec.Cmd {
-	return func(command string) *exec.Cmd {
+func (p *Plugin) customCmd(env map[string]string) func(command []string) *exec.Cmd {
+	return func(command []string) *exec.Cmd {
 		// if no command provided, use the server's one
-		if command == "" {
+		if len(command) == 0 {
 			command = p.cfg.Command
 		}
 
 		var cmd *exec.Cmd
 
-		preparedCmd := make([]string, 0, 10)
-		preparedCmd = append(preparedCmd, strings.Split(command, " ")...)
+		preparedCmd := make([]string, 0, 5)
+		// here we may have 2 cases: command declared as a space separated string or as a slice
+		switch len(command) {
+		// command defined as a space separated string
+		case 1:
+			// we know that the len is 1, so we can safely use the first element
+			preparedCmd = append(preparedCmd, strings.Split(command[0], " ")...)
+		default:
+			// we have a slice with a 2 or more elements
+			// first element is the command, the rest are arguments
+			preparedCmd = command
+		}
 
 		if len(preparedCmd) == 1 {
-			cmd = exec.Command(preparedCmd[0]) //nolint:gosec
+			cmd = exec.Command(preparedCmd[0])
 		} else {
-			cmd = exec.Command(preparedCmd[0], preparedCmd[1:]...) //nolint:gosec
+			cmd = exec.Command(preparedCmd[0], preparedCmd[1:]...)
 		}
 
 		// copy prepared envs
@@ -323,7 +344,8 @@ func (p *Plugin) NewPool(ctx context.Context, cfg *pool.Config, env map[string]s
 
 	// we have after init command
 	if p.cfg.AfterInit != nil {
-		if pl.GetConfig().AfterInitCommand != "" {
+		// if AfterInitCommand is not empty, use it
+		if len(pl.GetConfig().AfterInitCommand) != 0 {
 			p.cfg.AfterInit.Command = pl.GetConfig().AfterInitCommand
 		}
 

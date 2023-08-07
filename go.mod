@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/roadrunner-server/errors v1.2.0
-	github.com/roadrunner-server/sdk/v4 v4.4.0-beta.4
+	github.com/roadrunner-server/sdk/v4 v4.4.0-beta.5
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.4
 	go.uber.org/zap v1.25.0
