@@ -1,2 +1,2 @@
-test:
+testpkg:
 	go test -v -race -cover -tags=debug ./...

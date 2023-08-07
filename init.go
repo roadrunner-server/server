@@ -14,11 +14,11 @@ import (
 type command struct {
 	log         *zap.Logger
 	env         map[string]string
-	command     string
+	command     []string
 	execTimeout time.Duration
 }
 
-func newCommand(log *zap.Logger, env map[string]string, cmd string, execTimeout time.Duration) *command {
+func newCommand(log *zap.Logger, env map[string]string, cmd []string, execTimeout time.Duration) *command {
 	return &command{
 		log:         log,
 		env:         env,
@@ -68,15 +68,27 @@ func (b *command) Write(data []byte) (int, error) {
 }
 
 // create command for the process
-func (b *command) createProcess(env map[string]string, cmd string) *exec.Cmd {
+func (b *command) createProcess(env map[string]string, cmd []string) *exec.Cmd {
 	// cmdArgs contain command arguments if the command in form of: php <command> or ls <command> -i -b
 	var cmdArgs []string
 	var command *exec.Cmd
-	cmdArgs = append(cmdArgs, strings.Split(cmd, " ")...)
-	if len(cmdArgs) < 2 {
-		command = exec.Command(cmd)
+
+	// here we may have 2 cases: command declared as a space separated string or as a slice
+	switch len(cmd) {
+	// command defined as a space separated string
+	case 1:
+		// we know that the len is 1, so we can safely use the first element
+		cmdArgs = append(cmdArgs, strings.Split(cmd[0], " ")...)
+	default:
+		// we have a slice with a 2 or more elements
+		// first element is the command, the rest are arguments
+		cmdArgs = cmd
+	}
+
+	if len(cmdArgs) == 1 {
+		command = exec.Command(cmd[0])
 	} else {
-		command = exec.Command(cmdArgs[0], cmdArgs[1:]...) //nolint:gosec
+		command = exec.Command(cmdArgs[0], cmdArgs[1:]...)
 	}
 
 	// set env variables from the config

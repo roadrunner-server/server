@@ -11,27 +11,20 @@ import (
 type Config struct {
 	// OnInit configuration
 	OnInit *InitConfig `mapstructure:"on_init"`
-
 	// AfterInit command to run after pool initialization
 	AfterInit *InitConfig `mapstructure:"after_init"`
-
 	// Command to run as application.
-	Command string `mapstructure:"command"`
-
+	Command []string `mapstructure:"command"`
 	// User to run application under.
 	User string `mapstructure:"user"`
-
 	// Group to run application under.
 	Group string `mapstructure:"group"`
-
 	// Env represents application environment.
 	Env map[string]string `mapstructure:"env"`
-
 	// Relay defines connection method and factory to be used to connect to workers:
 	// "pipes", "tcp://:6001", "unix://rr.sock"
 	// This config section must not change on re-configuration.
 	Relay string `mapstructure:"relay"`
-
 	// RelayTimeout defines for how long socket factory will be waiting for worker connection. This config section
 	// must not change on re-configuration. Defaults to 60s.
 	RelayTimeout time.Duration `mapstructure:"relay_timeout"`
@@ -39,11 +32,9 @@ type Config struct {
 
 type InitConfig struct {
 	// Command which is started before worker starts
-	Command string `mapstructure:"command"`
-
+	Command []string `mapstructure:"command"`
 	// ExecTimeout is execute timeout for the command
 	ExecTimeout time.Duration `mapstructure:"exec_timeout"`
-
 	// Env represents application environment.
 	Env map[string]string `mapstructure:"env"`
 }
@@ -56,7 +47,7 @@ type RPCConfig struct {
 
 // InitDefaults for the server config
 func (cfg *Config) InitDefaults() error {
-	if cfg.Command == "" {
+	if len(cfg.Command) == 0 {
 		return errors.Str("command should not be empty")
 	}
 
@@ -69,7 +60,7 @@ func (cfg *Config) InitDefaults() error {
 	}
 
 	if cfg.AfterInit != nil {
-		if cfg.AfterInit.Command == "" {
+		if len(cfg.AfterInit.Command) == 0 {
 			return errors.Str("after_init command should not be empty")
 		}
 
@@ -79,7 +70,7 @@ func (cfg *Config) InitDefaults() error {
 	}
 
 	if cfg.OnInit != nil {
-		if cfg.OnInit.Command == "" {
+		if len(cfg.OnInit.Command) == 0 {
 			return errors.Str("on_init command should not be empty")
 		}
 

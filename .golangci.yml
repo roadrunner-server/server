@@ -38,6 +38,9 @@ linters-settings:
   nolintlint:
     allow-leading-space: false
     require-specific: true
+  gosec:
+    excludes:
+      - G204
 
 linters: # All available linters list: <https://golangci-lint.run/usage/linters/>
   disable-all: true
