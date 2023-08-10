@@ -3,7 +3,7 @@ module github.com/roadrunner-server/server/v4
 go 1.20
 
 require (
-	github.com/roadrunner-server/errors v1.2.0
+	github.com/roadrunner-server/errors v1.3.0
 	github.com/roadrunner-server/sdk/v4 v4.4.0-beta.5
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.4
