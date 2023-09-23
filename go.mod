@@ -26,7 +26,7 @@ require (
 	github.com/roadrunner-server/goridge/v3 v3.8.1 // indirect
 	github.com/roadrunner-server/tcplisten v1.4.0 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
-	github.com/spf13/afero v1.9.5 // indirect
+	github.com/spf13/afero v1.10.0 // indirect
 	github.com/spf13/cast v1.5.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
