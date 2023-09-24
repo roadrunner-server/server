@@ -6,7 +6,7 @@ toolchain go1.21.0
 
 require (
 	github.com/roadrunner-server/errors v1.3.0
-	github.com/roadrunner-server/sdk/v4 v4.5.0-beta.1
+	github.com/roadrunner-server/sdk/v4 v4.5.0
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.4
 	go.uber.org/zap v1.26.0
