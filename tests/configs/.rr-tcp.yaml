@@ -1,0 +1,12 @@
+version: '3'
+
+server:
+  command: "php php_test_files/tcp.php"
+  env:
+    - RR_CONFIG: "/some/place/on/the/C134"
+    - RR_CONFIG2: "C138"
+  relay: "tcp://127.0.0.1:9999"
+  relay_timeout: "20s"
+logs:
+  mode: development
+  level: error

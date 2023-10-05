@@ -3,12 +3,50 @@ package server
 import (
 	"os"
 	"testing"
+	"time"
 
-	"github.com/roadrunner-server/server/v4/test"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )
+
+type Cfg struct {
+	v *viper.Viper
+}
+
+func InitMockCfg(v *viper.Viper) (*Cfg, error) {
+	return &Cfg{
+		v: v,
+	}, nil
+}
+
+func (c *Cfg) UnmarshalKey(name string, out interface{}) error {
+	return c.v.UnmarshalKey(name, out)
+}
+
+func (c *Cfg) Unmarshal(_ interface{}) error {
+	return nil
+}
+
+func (c *Cfg) Get(_ string) interface{} {
+	return nil
+}
+
+func (c *Cfg) Overwrite(_ map[string]interface{}) error {
+	return nil
+}
+
+func (c *Cfg) Has(_ string) bool {
+	return true
+}
+
+func (c *Cfg) GracefulTimeout() time.Duration {
+	return time.Second
+}
+
+func (c *Cfg) RRVersion() string {
+	return "2.8.0"
+}
 
 type TestLogger struct {
 	log *zap.Logger
@@ -110,13 +148,13 @@ func TestEnv(t *testing.T) {
 	require.NoError(t, err)
 
 	v := viper.New()
-	v.Set("server.command", "php ../../php_test_files/client.php echo pipes")
+	v.Set("server.command", "php php_test_files/client.php echo pipes")
 
 	m := make(map[string]interface{})
 	m["env"] = `DATABASE_URL: "mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?serverVersion=5.7`
 
 	v.Set("server.env", m)
-	cfg, err := test.InitMockCfg(v)
+	cfg, err := InitMockCfg(v)
 	require.NoError(t, err)
 
 	err = p.Init(cfg, NewTestLogger(log))
@@ -151,13 +189,13 @@ func TestEnv2(t *testing.T) {
 	require.NoError(t, err)
 
 	v := viper.New()
-	v.Set("server.command", "php ../../php_test_files/client.php echo pipes")
+	v.Set("server.command", "php php_test_files/client.php echo pipes")
 
 	m := make(map[string]interface{})
 	m["env"] = `DATABASE_URL: "mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST:$MYSQL_PORT/$MYSQL_DATABASE?serverVersion=5.7`
 
 	v.Set("server.env", m)
-	cfg, err := test.InitMockCfg(v)
+	cfg, err := InitMockCfg(v)
 	require.NoError(t, err)
 
 	err = p.Init(cfg, NewTestLogger(log))
@@ -192,13 +230,13 @@ func TestEnv3(t *testing.T) {
 	require.NoError(t, err)
 
 	v := viper.New()
-	v.Set("server.command", "php ../../php_test_files/client.php echo pipes")
+	v.Set("server.command", "php php_test_files/client.php echo pipes")
 
 	m := make(map[string]interface{})
 	m["env"] = `DATABASE_URL: "mysql://$MYSQL_USE:$MYSQL_PASSWORD@$MYSQL_HOST:$MYSQL_PORT/$MYSQL_DATABASE?serverVersion=5.7`
 
 	v.Set("server.env", m)
-	cfg, err := test.InitMockCfg(v)
+	cfg, err := InitMockCfg(v)
 	require.NoError(t, err)
 
 	err = p.Init(cfg, NewTestLogger(log))
@@ -222,13 +260,13 @@ func TestEnv4(t *testing.T) {
 	}
 
 	v := viper.New()
-	v.Set("server.command", "php ../../php_test_files/client.php echo pipes")
+	v.Set("server.command", "php php_test_files/client.php echo pipes")
 
 	m := make(map[string]interface{})
 	m["env"] = `FOO: "$FOO_BAR`
 
 	v.Set("server.env", m)
-	cfg, err := test.InitMockCfg(v)
+	cfg, err := InitMockCfg(v)
 	require.NoError(t, err)
 
 	err = p.Init(cfg, NewTestLogger(log))

@@ -1,0 +1,13 @@
+version: '3'
+
+server:
+  after_init:
+    command: "php some_file.php"
+
+  command: "sleep 3"
+  relay: "pipes"
+  relay_timeout: "5s"
+
+logs:
+  mode: development
+  level: error

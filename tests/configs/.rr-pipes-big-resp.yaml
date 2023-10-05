@@ -1,0 +1,12 @@
+version: '3'
+
+server:
+  command: "php php_test_files/pipes_big_resp_server.php"
+  relay: pipes
+  relay_timeout: "20s"
+
+logs:
+  mode: production
+  level: info
+  output: stderr
+  err_output: stderr
