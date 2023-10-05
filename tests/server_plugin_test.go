@@ -28,14 +28,14 @@ import (
 )
 
 func TestAppPipes(t *testing.T) {
-	container := endure.New(slog.LevelDebug)
+	cont := endure.New(slog.LevelDebug)
 
 	// config plugin
 	vp := &config.Plugin{}
 	vp.Path = "configs/.rr.yaml"
 	vp.Prefix = "rr"
 
-	err := container.RegisterAll(
+	err := cont.RegisterAll(
 		vp,
 		&server.Plugin{},
 		&Foo{},
@@ -43,40 +43,45 @@ func TestAppPipes(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	err = container.Init()
+	err = cont.Init()
 	require.NoError(t, err)
 
-	errCh, err := container.Serve()
+	ch, err := cont.Serve()
 	require.NoError(t, err)
 
 	// stop by CTRL+C
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-	tt := time.NewTimer(time.Second * 5)
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 
+	stopCh := make(chan struct{}, 1)
+
 	go func() {
 		defer wg.Done()
-		defer tt.Stop()
 		for {
 			select {
-			case e := <-errCh:
-				assert.NoError(t, e.Error)
-				assert.NoError(t, container.Stop())
+			case e := <-ch:
+				assert.Fail(t, "error", e.Error.Error())
+			case <-sig:
+				err = cont.Stop()
+				if err != nil {
+					assert.FailNow(t, "error", err.Error())
+				}
 				return
-			case <-c:
-				er := container.Stop()
-				assert.NoError(t, er)
-				return
-			case <-tt.C:
-				assert.NoError(t, container.Stop())
+			case <-stopCh:
+				// timeout
+				err = cont.Stop()
+				if err != nil {
+					assert.FailNow(t, "error", err.Error())
+				}
 				return
 			}
 		}
 	}()
 
+	stopCh <- struct{}{}
 	wg.Wait()
 }
 
@@ -106,6 +111,7 @@ func TestAppPipesBigResp(t *testing.T) {
 	ch, err := cont.Serve()
 	require.NoError(t, err)
 
+	// stop by CTRL+C
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
@@ -120,10 +126,6 @@ func TestAppPipesBigResp(t *testing.T) {
 			select {
 			case e := <-ch:
 				assert.Fail(t, "error", e.Error.Error())
-				err = cont.Stop()
-				if err != nil {
-					assert.FailNow(t, "error", err.Error())
-				}
 			case <-sig:
 				err = cont.Stop()
 				if err != nil {
@@ -154,14 +156,14 @@ func TestAppPipesBigResp(t *testing.T) {
 }
 
 func TestAppSockets(t *testing.T) {
-	container := endure.New(slog.LevelDebug)
+	cont := endure.New(slog.LevelDebug)
 
 	// config plugin
 	vp := &config.Plugin{}
 	vp.Path = "configs/.rr-sockets.yaml"
 	vp.Prefix = "rr"
 
-	err := container.RegisterAll(
+	err := cont.RegisterAll(
 		vp,
 		&server.Plugin{},
 		&Foo2{},
@@ -169,39 +171,47 @@ func TestAppSockets(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	err = container.Init()
+	err = cont.Init()
 	require.NoError(t, err)
 
-	errCh, err := container.Serve()
+	ch, err := cont.Serve()
 	require.NoError(t, err)
 
 	// stop by CTRL+C
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-	// stop after 10 seconds
-	tt := time.NewTicker(time.Second * 10)
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
 
-	for {
-		select {
-		case e := <-errCh:
-			assert.NoError(t, e.Error)
-			assert.NoError(t, container.Stop())
-			tt.Stop()
-			return
-		case <-c:
-			er := container.Stop()
-			tt.Stop()
-			if er != nil {
-				panic(er)
+	stopCh := make(chan struct{}, 1)
+
+	go func() {
+		defer wg.Done()
+		for {
+			select {
+			case e := <-ch:
+				assert.Fail(t, "error", e.Error.Error())
+			case <-sig:
+				err = cont.Stop()
+				if err != nil {
+					assert.FailNow(t, "error", err.Error())
+				}
+				return
+			case <-stopCh:
+				// timeout
+				err = cont.Stop()
+				if err != nil {
+					assert.FailNow(t, "error", err.Error())
+				}
+				return
 			}
-			return
-		case <-tt.C:
-			tt.Stop()
-			assert.NoError(t, container.Stop())
-			return
 		}
-	}
+	}()
+
+	time.Sleep(time.Second * 5)
+	stopCh <- struct{}{}
+	wg.Wait()
 }
 
 func TestAppPipesException(t *testing.T) {
@@ -230,29 +240,30 @@ func TestAppPipesException(t *testing.T) {
 }
 
 func TestAppTCPOnInit(t *testing.T) {
-	container := endure.New(slog.LevelDebug)
+	cont := endure.New(slog.LevelDebug)
 
 	// config plugin
 	vp := &config.Plugin{}
 	vp.Path = "configs/.rr-tcp-on-init.yaml"
 	vp.Prefix = "rr"
-	err := container.Register(vp)
+	err := cont.Register(vp)
 	require.NoError(t, err)
 
 	l, oLogger := mockLogger.ZapTestLogger(zap.DebugLevel)
-	err = container.RegisterAll(
+	err = cont.RegisterAll(
 		l,
 		&server.Plugin{},
 		&Foo2{},
 	)
 	require.NoError(t, err)
 
-	err = container.Init()
+	err = cont.Init()
 	require.NoError(t, err)
 
-	ch, err := container.Serve()
+	ch, err := cont.Serve()
 	require.NoError(t, err)
 
+	// stop by CTRL+C
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
@@ -267,20 +278,15 @@ func TestAppTCPOnInit(t *testing.T) {
 			select {
 			case e := <-ch:
 				assert.Fail(t, "error", e.Error.Error())
-				err = container.Stop()
-				if err != nil {
-					assert.FailNow(t, "error", err.Error())
-				}
-				return
 			case <-sig:
-				err = container.Stop()
+				err = cont.Stop()
 				if err != nil {
 					assert.FailNow(t, "error", err.Error())
 				}
 				return
 			case <-stopCh:
 				// timeout
-				err = container.Stop()
+				err = cont.Stop()
 				if err != nil {
 					assert.FailNow(t, "error", err.Error())
 				}
@@ -302,29 +308,30 @@ func TestAppTCPOnInit(t *testing.T) {
 }
 
 func TestAppTCPAfterInit(t *testing.T) {
-	container := endure.New(slog.LevelDebug)
+	cont := endure.New(slog.LevelDebug)
 
 	// config plugin
 	vp := &config.Plugin{}
 	vp.Path = "configs/.rr-tcp-after-init.yaml"
 	vp.Prefix = "rr"
-	err := container.Register(vp)
+	err := cont.Register(vp)
 	require.NoError(t, err)
 
 	l, oLogger := mockLogger.ZapTestLogger(zap.DebugLevel)
-	err = container.RegisterAll(
+	err = cont.RegisterAll(
 		l,
 		&server.Plugin{},
 		&Foo2{},
 	)
 	require.NoError(t, err)
 
-	err = container.Init()
+	err = cont.Init()
 	require.NoError(t, err)
 
-	ch, err := container.Serve()
+	ch, err := cont.Serve()
 	require.NoError(t, err)
 
+	// stop by CTRL+C
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
@@ -339,20 +346,15 @@ func TestAppTCPAfterInit(t *testing.T) {
 			select {
 			case e := <-ch:
 				assert.Fail(t, "error", e.Error.Error())
-				err = container.Stop()
-				if err != nil {
-					assert.FailNow(t, "error", err.Error())
-				}
-				return
 			case <-sig:
-				err = container.Stop()
+				err = cont.Stop()
 				if err != nil {
 					assert.FailNow(t, "error", err.Error())
 				}
 				return
 			case <-stopCh:
 				// timeout
-				err = container.Stop()
+				err = cont.Stop()
 				if err != nil {
 					assert.FailNow(t, "error", err.Error())
 				}
@@ -374,29 +376,30 @@ func TestAppTCPAfterInit(t *testing.T) {
 }
 
 func TestAppSocketsOnInit(t *testing.T) {
-	container := endure.New(slog.LevelDebug)
+	cont := endure.New(slog.LevelDebug)
 
 	// config plugin
 	vp := &config.Plugin{}
 	vp.Path = "configs/.rr-sockets-on-init.yaml"
 	vp.Prefix = "rr"
-	err := container.Register(vp)
+	err := cont.Register(vp)
 	require.NoError(t, err)
 
 	l, oLogger := mockLogger.ZapTestLogger(zap.DebugLevel)
-	err = container.RegisterAll(
+	err = cont.RegisterAll(
 		l,
 		&server.Plugin{},
 		&Foo2{},
 	)
 	require.NoError(t, err)
 
-	err = container.Init()
+	err = cont.Init()
 	require.NoError(t, err)
 
-	ch, err := container.Serve()
+	ch, err := cont.Serve()
 	require.NoError(t, err)
 
+	// stop by CTRL+C
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
@@ -411,20 +414,15 @@ func TestAppSocketsOnInit(t *testing.T) {
 			select {
 			case e := <-ch:
 				assert.Fail(t, "error", e.Error.Error())
-				err = container.Stop()
-				if err != nil {
-					assert.FailNow(t, "error", err.Error())
-				}
-				return
 			case <-sig:
-				err = container.Stop()
+				err = cont.Stop()
 				if err != nil {
 					assert.FailNow(t, "error", err.Error())
 				}
 				return
 			case <-stopCh:
 				// timeout
-				err = container.Stop()
+				err = cont.Stop()
 				if err != nil {
 					assert.FailNow(t, "error", err.Error())
 				}
@@ -446,29 +444,30 @@ func TestAppSocketsOnInit(t *testing.T) {
 }
 
 func TestAppSocketsOnInitFastClose(t *testing.T) {
-	container := endure.New(slog.LevelDebug)
+	cont := endure.New(slog.LevelDebug)
 
 	// config plugin
 	vp := &config.Plugin{}
 	vp.Path = "configs/.rr-sockets-on-init-fast-close.yaml"
 	vp.Prefix = "rr"
-	err := container.Register(vp)
+	err := cont.Register(vp)
 	require.NoError(t, err)
 
 	l, oLogger := mockLogger.ZapTestLogger(zap.DebugLevel)
-	err = container.RegisterAll(
+	err = cont.RegisterAll(
 		l,
 		&server.Plugin{},
 		&Foo2{},
 	)
 	require.NoError(t, err)
 
-	err = container.Init()
+	err = cont.Init()
 	require.NoError(t, err)
 
-	ch, err := container.Serve()
+	ch, err := cont.Serve()
 	require.NoError(t, err)
 
+	// stop by CTRL+C
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
@@ -483,20 +482,15 @@ func TestAppSocketsOnInitFastClose(t *testing.T) {
 			select {
 			case e := <-ch:
 				assert.Fail(t, "error", e.Error.Error())
-				err = container.Stop()
-				if err != nil {
-					assert.FailNow(t, "error", err.Error())
-				}
-				return
 			case <-sig:
-				err = container.Stop()
+				err = cont.Stop()
 				if err != nil {
 					assert.FailNow(t, "error", err.Error())
 				}
 				return
 			case <-stopCh:
 				// timeout
-				err = container.Stop()
+				err = cont.Stop()
 				if err != nil {
 					assert.FailNow(t, "error", err.Error())
 				}
@@ -513,29 +507,30 @@ func TestAppSocketsOnInitFastClose(t *testing.T) {
 }
 
 func TestAppSocketsAfterInitFastClose(t *testing.T) {
-	container := endure.New(slog.LevelDebug)
+	cont := endure.New(slog.LevelDebug)
 
 	// config plugin
 	vp := &config.Plugin{}
 	vp.Path = "configs/.rr-sockets-after-init-fast-close.yaml"
 	vp.Prefix = "rr"
-	err := container.Register(vp)
+	err := cont.Register(vp)
 	require.NoError(t, err)
 
 	l, oLogger := mockLogger.ZapTestLogger(zap.DebugLevel)
-	err = container.RegisterAll(
+	err = cont.RegisterAll(
 		l,
 		&server.Plugin{},
 		&Foo2{},
 	)
 	require.NoError(t, err)
 
-	err = container.Init()
+	err = cont.Init()
 	require.NoError(t, err)
 
-	ch, err := container.Serve()
+	ch, err := cont.Serve()
 	require.NoError(t, err)
 
+	// stop by CTRL+C
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
@@ -550,20 +545,15 @@ func TestAppSocketsAfterInitFastClose(t *testing.T) {
 			select {
 			case e := <-ch:
 				assert.Fail(t, "error", e.Error.Error())
-				err = container.Stop()
-				if err != nil {
-					assert.FailNow(t, "error", err.Error())
-				}
-				return
 			case <-sig:
-				err = container.Stop()
+				err = cont.Stop()
 				if err != nil {
 					assert.FailNow(t, "error", err.Error())
 				}
 				return
 			case <-stopCh:
 				// timeout
-				err = container.Stop()
+				err = cont.Stop()
 				if err != nil {
 					assert.FailNow(t, "error", err.Error())
 				}
@@ -580,14 +570,14 @@ func TestAppSocketsAfterInitFastClose(t *testing.T) {
 }
 
 func TestAppTCP(t *testing.T) {
-	container := endure.New(slog.LevelDebug)
+	cont := endure.New(slog.LevelDebug)
 
 	// config plugin
 	vp := &config.Plugin{}
 	vp.Path = "configs/.rr-tcp.yaml"
 	vp.Prefix = "rr"
 
-	err := container.RegisterAll(
+	err := cont.RegisterAll(
 		vp,
 		&server.Plugin{},
 		&Foo3{},
@@ -595,37 +585,46 @@ func TestAppTCP(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	err = container.Init()
+	err = cont.Init()
 	require.NoError(t, err)
 
-	errCh, err := container.Serve()
+	ch, err := cont.Serve()
 	require.NoError(t, err)
 
 	// stop by CTRL+C
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-	// stop after 10 seconds
-	tt := time.NewTicker(time.Second * 10)
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
 
-	for {
-		select {
-		case e := <-errCh:
-			assert.NoError(t, e.Error)
-			assert.NoError(t, container.Stop())
-			return
-		case <-c:
-			er := container.Stop()
-			if er != nil {
-				panic(er)
+	stopCh := make(chan struct{}, 1)
+
+	go func() {
+		defer wg.Done()
+		for {
+			select {
+			case e := <-ch:
+				assert.Fail(t, "error", e.Error.Error())
+			case <-sig:
+				err = cont.Stop()
+				if err != nil {
+					assert.FailNow(t, "error", err.Error())
+				}
+				return
+			case <-stopCh:
+				// timeout
+				err = cont.Stop()
+				if err != nil {
+					assert.FailNow(t, "error", err.Error())
+				}
+				return
 			}
-			return
-		case <-tt.C:
-			tt.Stop()
-			assert.NoError(t, container.Stop())
-			return
 		}
-	}
+	}()
+
+	stopCh <- struct{}{}
+	wg.Wait()
 }
 
 func TestAppWrongConfig(t *testing.T) {
@@ -785,14 +784,14 @@ func TestAppNoAppSectionInConfig(t *testing.T) {
 }
 
 func TestOnInitMetrics(t *testing.T) {
-	container := endure.New(slog.LevelDebug)
+	cont := endure.New(slog.LevelDebug)
 
 	// config plugin
 	vp := &config.Plugin{}
 	vp.Path = "configs/.rr-metrics-oninit.yaml"
 	vp.Prefix = "rr"
 
-	err := container.RegisterAll(
+	err := cont.RegisterAll(
 		vp,
 		&server.Plugin{},
 		&metrics.Plugin{},
@@ -802,39 +801,44 @@ func TestOnInitMetrics(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	err = container.Init()
+	err = cont.Init()
 	require.NoError(t, err)
 
-	errCh, err := container.Serve()
+	ch, err := cont.Serve()
 	require.NoError(t, err)
 
 	// stop by CTRL+C
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-	tt := time.NewTimer(time.Second * 5)
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 
+	stopCh := make(chan struct{}, 1)
+
 	go func() {
 		defer wg.Done()
-		defer tt.Stop()
 		for {
 			select {
-			case e := <-errCh:
-				assert.NoError(t, e.Error)
-				assert.NoError(t, container.Stop())
+			case e := <-ch:
+				assert.Fail(t, "error", e.Error.Error())
+			case <-sig:
+				err = cont.Stop()
+				if err != nil {
+					assert.FailNow(t, "error", err.Error())
+				}
 				return
-			case <-c:
-				er := container.Stop()
-				assert.NoError(t, er)
-				return
-			case <-tt.C:
-				assert.NoError(t, container.Stop())
+			case <-stopCh:
+				// timeout
+				err = cont.Stop()
+				if err != nil {
+					assert.FailNow(t, "error", err.Error())
+				}
 				return
 			}
 		}
 	}()
 
+	stopCh <- struct{}{}
 	wg.Wait()
 }

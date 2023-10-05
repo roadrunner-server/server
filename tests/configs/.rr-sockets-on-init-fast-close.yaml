@@ -5,7 +5,7 @@ server:
     command: "php php_test_files/loop.php"
     exec_timeout: 1ns
 
-  command: "php socket.php"
+  command: "php php_test_files/socket.php"
   env:
     - RR_CONFIG: "/some/place/on/the/C134"
     - RR_CONFIG2: "C138"
