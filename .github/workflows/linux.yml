@@ -75,9 +75,6 @@ jobs:
         run: |
           cd tests
           
-          chmod 777 php_test_files/test_binary
-          chmod +x php_test_files/test_binary
-          
           go test -timeout 20m -v -race -cover -tags=debug -failfast -coverpkg=$(cat pkgs.txt) -coverprofile=./coverage-ci/server.out -covermode=atomic ./...
 
       - name: Archive code coverage results
