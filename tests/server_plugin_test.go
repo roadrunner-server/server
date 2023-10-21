@@ -307,74 +307,6 @@ func TestAppTCPOnInit(t *testing.T) {
 	require.Equal(t, 1, oLogger.FilterMessageSnippet("The number is: 5").Len())
 }
 
-func TestAppTCPAfterInit(t *testing.T) {
-	cont := endure.New(slog.LevelDebug)
-
-	// config plugin
-	vp := &config.Plugin{}
-	vp.Path = "configs/.rr-tcp-after-init.yaml"
-	vp.Prefix = "rr"
-	err := cont.Register(vp)
-	require.NoError(t, err)
-
-	l, oLogger := mockLogger.ZapTestLogger(zap.DebugLevel)
-	err = cont.RegisterAll(
-		l,
-		&server.Plugin{},
-		&Foo2{},
-	)
-	require.NoError(t, err)
-
-	err = cont.Init()
-	require.NoError(t, err)
-
-	ch, err := cont.Serve()
-	require.NoError(t, err)
-
-	// stop by CTRL+C
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-
-	stopCh := make(chan struct{}, 1)
-
-	go func() {
-		defer wg.Done()
-		for {
-			select {
-			case e := <-ch:
-				assert.Fail(t, "error", e.Error.Error())
-			case <-sig:
-				err = cont.Stop()
-				if err != nil {
-					assert.FailNow(t, "error", err.Error())
-				}
-				return
-			case <-stopCh:
-				// timeout
-				err = cont.Stop()
-				if err != nil {
-					assert.FailNow(t, "error", err.Error())
-				}
-				return
-			}
-		}
-	}()
-
-	time.Sleep(time.Second * 10)
-	stopCh <- struct{}{}
-	wg.Wait()
-
-	require.Equal(t, 1, oLogger.FilterMessageSnippet("The number is: 0").Len())
-	require.Equal(t, 1, oLogger.FilterMessageSnippet("The number is: 1").Len())
-	require.Equal(t, 1, oLogger.FilterMessageSnippet("The number is: 2").Len())
-	require.Equal(t, 1, oLogger.FilterMessageSnippet("The number is: 3").Len())
-	require.Equal(t, 1, oLogger.FilterMessageSnippet("The number is: 4").Len())
-	require.Equal(t, 1, oLogger.FilterMessageSnippet("The number is: 5").Len())
-}
-
 func TestAppSocketsOnInit(t *testing.T) {
 	cont := endure.New(slog.LevelDebug)
 
@@ -449,69 +381,6 @@ func TestAppSocketsOnInitFastClose(t *testing.T) {
 	// config plugin
 	vp := &config.Plugin{}
 	vp.Path = "configs/.rr-sockets-on-init-fast-close.yaml"
-	vp.Prefix = "rr"
-	err := cont.Register(vp)
-	require.NoError(t, err)
-
-	l, oLogger := mockLogger.ZapTestLogger(zap.DebugLevel)
-	err = cont.RegisterAll(
-		l,
-		&server.Plugin{},
-		&Foo2{},
-	)
-	require.NoError(t, err)
-
-	err = cont.Init()
-	require.NoError(t, err)
-
-	ch, err := cont.Serve()
-	require.NoError(t, err)
-
-	// stop by CTRL+C
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-
-	stopCh := make(chan struct{}, 1)
-
-	go func() {
-		defer wg.Done()
-		for {
-			select {
-			case e := <-ch:
-				assert.Fail(t, "error", e.Error.Error())
-			case <-sig:
-				err = cont.Stop()
-				if err != nil {
-					assert.FailNow(t, "error", err.Error())
-				}
-				return
-			case <-stopCh:
-				// timeout
-				err = cont.Stop()
-				if err != nil {
-					assert.FailNow(t, "error", err.Error())
-				}
-				return
-			}
-		}
-	}()
-
-	time.Sleep(time.Second * 10)
-	stopCh <- struct{}{}
-	wg.Wait()
-
-	require.Equal(t, 1, oLogger.FilterMessageSnippet("process wait").Len())
-}
-
-func TestAppSocketsAfterInitFastClose(t *testing.T) {
-	cont := endure.New(slog.LevelDebug)
-
-	// config plugin
-	vp := &config.Plugin{}
-	vp.Path = "configs/.rr-sockets-after-init-fast-close.yaml"
 	vp.Prefix = "rr"
 	err := cont.Register(vp)
 	require.NoError(t, err)
@@ -711,32 +580,6 @@ func TestAppWrongCommandOnInit(t *testing.T) {
 	// config plugin
 	vp := &config.Plugin{}
 	vp.Path = "configs/.rr-wrong-command-on-init.yaml"
-	vp.Prefix = "rr"
-	err := container.Register(vp)
-	require.NoError(t, err)
-
-	err = container.Register(&server.Plugin{})
-	require.NoError(t, err)
-
-	err = container.Register(&Foo3{})
-	require.NoError(t, err)
-
-	err = container.Register(&logger.Plugin{})
-	require.NoError(t, err)
-
-	err = container.Init()
-	require.NoError(t, err)
-
-	_, err = container.Serve()
-	require.Error(t, err)
-}
-
-func TestAppWrongCommandAfterInit(t *testing.T) {
-	container := endure.New(slog.LevelDebug)
-
-	// config plugin
-	vp := &config.Plugin{}
-	vp.Path = "configs/.rr-wrong-command-after-init.yaml"
 	vp.Prefix = "rr"
 	err := container.Register(vp)
 	require.NoError(t, err)

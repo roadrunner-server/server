@@ -344,19 +344,6 @@ func (p *Plugin) NewPool(ctx context.Context, cfg *pool.Config, env map[string]s
 		return nil, err
 	}
 
-	// we have after init command
-	if p.cfg.AfterInit != nil {
-		// if AfterInitCommand is not empty, use it
-		if len(pl.GetConfig().AfterInitCommand) != 0 {
-			p.cfg.AfterInit.Command = pl.GetConfig().AfterInitCommand
-		}
-
-		err = newCommand(p.log, p.cfg.AfterInit.Env, p.cfg.AfterInit.Command, p.cfg.AfterInit.ExecTimeout).start()
-		if err != nil {
-			p.log.Error("after_init was finished with errors", zap.Error(err))
-		}
-	}
-
 	p.pools = append(p.pools, pl)
 
 	return pl, nil

@@ -11,8 +11,6 @@ import (
 type Config struct {
 	// OnInit configuration
 	OnInit *InitConfig `mapstructure:"on_init"`
-	// AfterInit command to run after pool initialization
-	AfterInit *InitConfig `mapstructure:"after_init"`
 	// Command to run as application.
 	Command []string `mapstructure:"command"`
 	// User to run application under.
@@ -57,16 +55,6 @@ func (cfg *Config) InitDefaults() error {
 
 	if cfg.RelayTimeout == 0 {
 		cfg.RelayTimeout = time.Second * 60
-	}
-
-	if cfg.AfterInit != nil {
-		if len(cfg.AfterInit.Command) == 0 {
-			return errors.Str("after_init command should not be empty")
-		}
-
-		if cfg.AfterInit.ExecTimeout == 0 {
-			cfg.AfterInit.ExecTimeout = time.Minute
-		}
 	}
 
 	if cfg.OnInit != nil {
