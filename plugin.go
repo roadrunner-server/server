@@ -173,16 +173,25 @@ func (p *Plugin) Stop(ctx context.Context) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	// destroy all pools
+	wg := &sync.WaitGroup{}
+	wg.Add(len(p.pools))
+
+	// destroy all pools in parallel
 	for i := 0; i < len(p.pools); i++ {
-		if p.pools[i] != nil {
-			ctx2, cancel := context.WithTimeout(ctx, p.pools[i].GetConfig().DestroyTimeout)
-			p.pools[i].Destroy(ctx2)
+		go func(idx int) {
+			if p.pools[idx] == nil {
+				wg.Done()
+				return
+			}
+			ctx2, cancel := context.WithTimeout(ctx, p.pools[idx].GetConfig().DestroyTimeout)
+			p.pools[idx].Destroy(ctx2)
 			cancel()
-		}
+			wg.Done()
+		}(i)
 	}
 
-	// just to be sure, that all logs are synced
+	wg.Wait()
+	// just to be sure that all logs are synced
 	time.Sleep(time.Second)
 	return p.factory.Close()
 }
