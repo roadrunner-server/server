@@ -14,7 +14,7 @@ require (
 	github.com/roadrunner-server/prometheus/v4 v4.1.9
 	github.com/roadrunner-server/rpc/v4 v4.2.9
 	github.com/roadrunner-server/sdk/v4 v4.5.3
-	github.com/roadrunner-server/server/v4 v4.5.0
+	github.com/roadrunner-server/server/v4 v4.5.1
 	github.com/stretchr/testify v1.8.4
 	go.uber.org/zap v1.26.0
 )
