@@ -161,7 +161,7 @@ func TestEnv(t *testing.T) {
 	require.NoError(t, err)
 
 	for i := 0; i < len(p.preparedEnvs); i++ {
-		if p.preparedEnvs[i] == `ENV=DATABASE_URL: "mysql://foo:foo1@foo2:foo3/foo4?serverVersion=5.7` {
+		if p.preparedEnvs[i] == `ENV=DATABASE_URL: "mysql://foo:foo1@foo2:foo3/foo4?serverVersion=5.7` { //nolint:gosec
 			return
 		}
 	}
@@ -202,7 +202,7 @@ func TestEnv2(t *testing.T) {
 	require.NoError(t, err)
 
 	for i := 0; i < len(p.preparedEnvs); i++ {
-		if p.preparedEnvs[i] == `ENV=DATABASE_URL: "mysql://foo:foo1@foo2:foo3/foo4?serverVersion=5.7` {
+		if p.preparedEnvs[i] == `ENV=DATABASE_URL: "mysql://foo:foo1@foo2:foo3/foo4?serverVersion=5.7` { //nolint:gosec
 			return
 		}
 	}

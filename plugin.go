@@ -168,7 +168,7 @@ func (p *Plugin) Serve() chan error {
 	return errCh
 }
 
-// Stop used to close chosen in config factory
+// Stop used to stop all allocated pools
 func (p *Plugin) Stop(ctx context.Context) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -179,7 +179,7 @@ func (p *Plugin) Stop(ctx context.Context) error {
 	// destroy all pools in parallel
 	for i := 0; i < len(p.pools); i++ {
 		go func(idx int) {
-			if p.pools[idx] == nil {
+			if p.pools[idx] == nil || p.pools[idx].(*staticPool.Pool) == nil {
 				wg.Done()
 				return
 			}
