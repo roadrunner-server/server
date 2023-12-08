@@ -69,9 +69,9 @@ func (b *command) Write(data []byte) (int, error) {
 
 // create command for the process
 func (b *command) createProcess(env map[string]string, cmd []string) *exec.Cmd {
-	// cmdArgs contain command arguments if the command in form of: php <command> or ls <command> -i -b
+	// cmdArgs contain command arguments if the command in the form of: php <command> or ls <command> -i -b
 	var cmdArgs []string
-	var command *exec.Cmd
+	var execCmd *exec.Cmd
 
 	// here we may have 2 cases: command declared as a space separated string or as a slice
 	switch len(cmd) {
@@ -86,23 +86,23 @@ func (b *command) createProcess(env map[string]string, cmd []string) *exec.Cmd {
 	}
 
 	if len(cmdArgs) == 1 {
-		command = exec.Command(cmd[0])
+		execCmd = exec.Command(cmd[0])
 	} else {
-		command = exec.Command(cmdArgs[0], cmdArgs[1:]...)
+		execCmd = exec.Command(cmdArgs[0], cmdArgs[1:]...)
 	}
 
 	// set env variables from the config
 	if len(env) > 0 {
 		for k, v := range env {
-			command.Env = append(command.Env, fmt.Sprintf("%s=%s", strings.ToUpper(k), os.Expand(v, os.Getenv)))
+			execCmd.Env = append(execCmd.Env, fmt.Sprintf("%s=%s", strings.ToUpper(k), os.Expand(v, os.Getenv)))
 		}
 	}
 
 	// append system envs
-	command.Env = append(command.Env, os.Environ()...)
+	execCmd.Env = append(execCmd.Env, os.Environ()...)
 	// redirect stderr and stdout into the Write function of the process.go
-	command.Stderr = b
-	command.Stdout = b
+	execCmd.Stderr = b
+	execCmd.Stdout = b
 
-	return command
+	return execCmd
 }

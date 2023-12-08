@@ -63,7 +63,7 @@ const (
 type Configurer interface {
 	// UnmarshalKey takes a single key and unmarshal it into a Struct.
 	UnmarshalKey(name string, out any) error
-	// Has checks if config section exists.
+	// Has checks if a config section exists.
 	Has(name string) bool
 	// RRVersion is the roadrunner current version
 	RRVersion() string
@@ -315,7 +315,7 @@ func (p *Plugin) customCmd(env map[string]string) func(command []string) *exec.C
 		}
 
 		utils.IsolateProcess(cmd)
-		// if user is not empty, and OS is linux or macos
+		// if a user is not empty, and OS is linux or macOS
 		// execute php worker from that particular user
 		if p.cfg.User != "" {
 			err := utils.ExecuteFromUser(cmd, p.cfg.User)
