@@ -12,7 +12,10 @@ require (
 	go.uber.org/zap v1.26.0
 )
 
-exclude github.com/spf13/viper v1.18.0
+exclude (
+	github.com/spf13/viper v1.18.0
+	github.com/spf13/viper v1.18.1
+)
 
 require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
