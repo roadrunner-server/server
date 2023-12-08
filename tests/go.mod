@@ -5,25 +5,23 @@ go 1.21
 toolchain go1.21.5
 
 require (
-	github.com/roadrunner-server/config/v4 v4.6.2
+	github.com/roadrunner-server/config/v4 v4.6.3
 	github.com/roadrunner-server/endure/v2 v2.4.3
 	github.com/roadrunner-server/errors v1.3.0
-	github.com/roadrunner-server/http/v4 v4.4.7
-	github.com/roadrunner-server/logger/v4 v4.2.9
-	github.com/roadrunner-server/metrics/v4 v4.1.11
-	github.com/roadrunner-server/prometheus/v4 v4.1.10
-	github.com/roadrunner-server/rpc/v4 v4.2.10
+	github.com/roadrunner-server/http/v4 v4.4.8
+	github.com/roadrunner-server/logger/v4 v4.2.10
+	github.com/roadrunner-server/metrics/v4 v4.1.12
+	github.com/roadrunner-server/prometheus/v4 v4.1.11
+	github.com/roadrunner-server/rpc/v4 v4.2.11
 	github.com/roadrunner-server/sdk/v4 v4.5.3
 	github.com/roadrunner-server/server/v4 v4.5.3
 	github.com/stretchr/testify v1.8.4
 	go.uber.org/zap v1.26.0
 )
 
-replace github.com/roadrunner-server/server/v4 => ../
-
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/caddyserver/certmagic v0.19.2 // indirect
+	github.com/caddyserver/certmagic v0.20.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/fatih/color v1.16.0 // indirect
@@ -54,12 +52,12 @@ require (
 	github.com/roadrunner-server/api/v4 v4.9.0 // indirect
 	github.com/roadrunner-server/goridge/v3 v3.8.1 // indirect
 	github.com/roadrunner-server/tcplisten v1.4.0 // indirect
-	github.com/sagikazarmark/locafero v0.3.0 // indirect
+	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
-	github.com/spf13/afero v1.10.0 // indirect
-	github.com/spf13/cast v1.5.1 // indirect
+	github.com/spf13/afero v1.11.0 // indirect
+	github.com/spf13/cast v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.17.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
@@ -75,14 +73,14 @@ require (
 	go.opentelemetry.io/otel/metric v1.21.0 // indirect
 	go.opentelemetry.io/otel/trace v1.21.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.15.0 // indirect
-	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
+	golang.org/x/crypto v0.16.0 // indirect
+	golang.org/x/exp v0.0.0-20231206192017-f3f8817b8deb // indirect
 	golang.org/x/mod v0.14.0 // indirect
-	golang.org/x/net v0.18.0 // indirect
+	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
-	golang.org/x/tools v0.15.0 // indirect
+	golang.org/x/tools v0.16.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect

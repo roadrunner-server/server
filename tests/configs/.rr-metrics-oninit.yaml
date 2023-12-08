@@ -8,7 +8,7 @@ logs:
   mode: development
 
 rpc:
-  listen: 'tcp://0.0.0.0:6001'
+  listen: tcp://127.0.0.1:6001
 
 server:
   command: "php foo"
