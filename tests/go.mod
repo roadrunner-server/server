@@ -2,7 +2,7 @@ module tests
 
 go 1.21
 
-toolchain go1.21.4
+toolchain go1.21.5
 
 require (
 	github.com/roadrunner-server/config/v4 v4.6.3
@@ -13,7 +13,7 @@ require (
 	github.com/roadrunner-server/metrics/v4 v4.1.12
 	github.com/roadrunner-server/prometheus/v4 v4.1.11
 	github.com/roadrunner-server/rpc/v4 v4.2.11
-	github.com/roadrunner-server/sdk/v4 v4.5.3
+	github.com/roadrunner-server/sdk/v4 v4.5.4
 	github.com/roadrunner-server/server/v4 v4.5.3
 	github.com/stretchr/testify v1.8.4
 	go.uber.org/zap v1.26.0
@@ -31,7 +31,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
-	github.com/google/uuid v1.4.0 // indirect
+	github.com/google/uuid v1.5.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.6 // indirect

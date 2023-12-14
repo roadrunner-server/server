@@ -6,7 +6,7 @@ toolchain go1.21.0
 
 require (
 	github.com/roadrunner-server/errors v1.3.0
-	github.com/roadrunner-server/sdk/v4 v4.5.3
+	github.com/roadrunner-server/sdk/v4 v4.5.4
 	github.com/spf13/viper v1.17.0
 	github.com/stretchr/testify v1.8.4
 	go.uber.org/zap v1.26.0
@@ -23,7 +23,7 @@ require (
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
-	github.com/google/uuid v1.4.0 // indirect
+	github.com/google/uuid v1.5.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
