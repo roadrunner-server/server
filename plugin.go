@@ -159,7 +159,7 @@ func (p *Plugin) Serve() chan error {
 	errCh := make(chan error, 1)
 
 	if p.cfg.OnInit != nil {
-		err := newCommand(p.log, p.cfg.OnInit.Env, p.cfg.OnInit.Command, p.cfg.OnInit.ExecTimeout).start()
+		err := newCommand(p.log, p.cfg.OnInit).start()
 		if err != nil {
 			p.log.Error("on_init was finished with errors", zap.Error(err))
 		}
