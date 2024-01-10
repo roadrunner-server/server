@@ -13,7 +13,7 @@ require (
 	github.com/roadrunner-server/metrics/v4 v4.1.14
 	github.com/roadrunner-server/prometheus/v4 v4.1.13
 	github.com/roadrunner-server/rpc/v4 v4.2.13
-	github.com/roadrunner-server/sdk/v4 v4.5.5
+	github.com/roadrunner-server/sdk/v4 v4.5.6
 	github.com/roadrunner-server/server/v4 v4.5.5
 	github.com/stretchr/testify v1.8.4
 	go.uber.org/zap v1.26.0
@@ -80,10 +80,10 @@ require (
 	go.opentelemetry.io/otel/trace v1.21.0 // indirect
 	go.uber.org/mock v0.4.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.17.0 // indirect
+	golang.org/x/crypto v0.18.0 // indirect
 	golang.org/x/exp v0.0.0-20240103183307-be819d1f06fc // indirect
 	golang.org/x/mod v0.14.0 // indirect
-	golang.org/x/net v0.19.0 // indirect
+	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.16.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
