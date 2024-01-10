@@ -8,22 +8,19 @@ import (
 	"time"
 
 	"github.com/roadrunner-server/errors"
+	"github.com/roadrunner-server/sdk/v4/utils"
 	"go.uber.org/zap"
 )
 
 type command struct {
-	log         *zap.Logger
-	env         map[string]string
-	command     []string
-	execTimeout time.Duration
+	log *zap.Logger
+	cfg *InitConfig
 }
 
-func newCommand(log *zap.Logger, env map[string]string, cmd []string, execTimeout time.Duration) *command {
+func newCommand(log *zap.Logger, cfg *InitConfig) *command {
 	return &command{
-		log:         log,
-		env:         env,
-		command:     cmd,
-		execTimeout: execTimeout,
+		log: log,
+		cfg: cfg,
 	}
 }
 
@@ -31,8 +28,16 @@ func (b *command) start() error {
 	const op = errors.Op("server_on_init")
 	stopCh := make(chan struct{}, 1)
 
-	cmd := b.createProcess(b.env, b.command)
-	timer := time.NewTimer(b.execTimeout)
+	cmd := b.createProcess(b.cfg.Env, b.cfg.Command)
+
+	if b.cfg.User != "" {
+		err := utils.ExecuteFromUser(cmd, b.cfg.User)
+		if err != nil {
+			return errors.E(op, err)
+		}
+	}
+
+	timer := time.NewTimer(b.cfg.ExecTimeout)
 
 	err := cmd.Start()
 	if err != nil {

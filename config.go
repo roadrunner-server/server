@@ -35,6 +35,8 @@ type InitConfig struct {
 	ExecTimeout time.Duration `mapstructure:"exec_timeout"`
 	// Env represents application environment.
 	Env map[string]string `mapstructure:"env"`
+	// Env represents UID
+	User string `mapstructure:"user"`
 }
 
 // RPCConfig should be in sync with rpc/config.go
