@@ -348,7 +348,7 @@ func (p *Plugin) NewPool(ctx context.Context, cfg *pool.Config, env map[string]s
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	pl, err := staticPool.NewPool(ctx, p.customCmd(env), p.factory, cfg, p.log)
+	pl, err := staticPool.NewPool(ctx, p.customCmd(env), p.factory, cfg, p.log, staticPool.WithQueueSize(cfg.MaxQueueSize))
 	if err != nil {
 		return nil, err
 	}
