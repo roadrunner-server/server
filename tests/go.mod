@@ -2,12 +2,12 @@ module tests
 
 go 1.21
 
-toolchain go1.22rc1
+toolchain go1.22rc2
 
 require (
 	github.com/roadrunner-server/config/v4 v4.6.6
 	github.com/roadrunner-server/endure/v2 v2.4.3
-	github.com/roadrunner-server/errors v1.3.0
+	github.com/roadrunner-server/errors v1.4.0
 	github.com/roadrunner-server/http/v4 v4.4.12
 	github.com/roadrunner-server/logger/v4 v4.2.13
 	github.com/roadrunner-server/metrics/v4 v4.1.15
@@ -32,8 +32,8 @@ require (
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
-	github.com/google/pprof v0.0.0-20240117000934-35fc243c5815 // indirect
-	github.com/google/uuid v1.5.0 // indirect
+	github.com/google/pprof v0.0.0-20240130152714-0ed6a68c8d9e // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.6 // indirect
@@ -69,7 +69,7 @@ require (
 	github.com/tklauser/numcpus v0.7.0 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
-	github.com/yusufpapurcu/wmi v1.2.3 // indirect
+	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	github.com/zeebo/blake3 v0.2.3 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.47.0 // indirect
 	go.opentelemetry.io/contrib/propagators/jaeger v1.22.0 // indirect
