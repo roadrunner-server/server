@@ -8,7 +8,7 @@ require (
 	github.com/roadrunner-server/config/v4 v4.6.6
 	github.com/roadrunner-server/endure/v2 v2.4.3
 	github.com/roadrunner-server/errors v1.4.0
-	github.com/roadrunner-server/http/v4 v4.4.12
+	github.com/roadrunner-server/http/v4 v4.5.0
 	github.com/roadrunner-server/logger/v4 v4.2.13
 	github.com/roadrunner-server/metrics/v4 v4.1.15
 	github.com/roadrunner-server/prometheus/v4 v4.1.14
