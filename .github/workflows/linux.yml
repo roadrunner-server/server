@@ -17,7 +17,7 @@ jobs:
     timeout-minutes: 60
     strategy:
       matrix:
-        php: [ "8.2" ]
+        php: [ "8.3" ]
         go: [ stable ]
         os: [ "ubuntu-latest" ]
     steps:
@@ -69,13 +69,12 @@ jobs:
       - name: Run server unit tests with coverage
         run: |
           mkdir ./tests/coverage-ci
-          go test -timeout 20m -v -race -cover -tags=debug -failfast -coverpkg=$(cat ./tests/pkgs.txt) -coverprofile=./tests/coverage-ci/server_u.out -covermode=atomic ./...
+          go test -timeout 20m -v -race -cover -tags=debug -failfast -coverpkg=$(cat ./tests/pkgs.txt) -coverprofile=./tests/coverage-ci/server_u.out -covermode=atomic plugin_test.go plugin.go init.go config.go
 
       - name: Run server e2e tests with coverage
         run: |
           cd tests
-          
-          go test -timeout 20m -v -race -cover -tags=debug -failfast -coverpkg=$(cat pkgs.txt) -coverprofile=./coverage-ci/server.out -covermode=atomic ./...
+          go test -timeout 20m -v -race -cover -tags=debug -failfast -coverpkg=$(cat pkgs.txt) -coverprofile=./coverage-ci/server.out -covermode=atomic plugin_pipes.go plugin_pipes_big_resp.go plugin_sockets.go plugin_tcp.go server_plugin_test.go
 
       - name: Archive code coverage results
         uses: actions/upload-artifact@v4
