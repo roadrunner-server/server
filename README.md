@@ -1,1 +1,1 @@
-# Docs: [link](https://roadrunner.dev/docs/plugins-server/2.x/en)
+# Docs: [link](https://docs.roadrunner.dev/plugins/server)
