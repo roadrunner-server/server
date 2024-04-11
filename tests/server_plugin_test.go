@@ -235,7 +235,7 @@ func TestAppPipesException(t *testing.T) {
 
 	_, err = container.Serve()
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "validation failed on the message sent to STDOUT, see: https://roadrunner.dev/docs/known-issues-stdout-crc/current/en, invalid message: warning: some weird php error warning: some weird php error warning: some weird php error warning: some weird php error warning: some weird php error")
+	assert.Contains(t, err.Error(), "validation failed on the message sent to STDOUT, see: https://docs.roadrunner.dev/error-codes/stdout-crc, invalid message: warning: some weird php error warning: some weird php error warning: some weird php error warning: some weird php error warning: some weird php error")
 	_ = container.Stop()
 }
 
