@@ -141,7 +141,7 @@ func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 
 	p.pools = make([]Pool, 0, 4)
 
-	p.factory, err = initFactory(p.log, p.cfg.Relay, p.cfg.RelayTimeout)
+	p.factory, err = initFactory(p.log, p.cfg.Relay)
 	if err != nil {
 		return errors.E(op, err)
 	}
@@ -335,7 +335,7 @@ func (p *Plugin) NewWorker(ctx context.Context, env map[string]string) (*worker.
 
 	spawnCmd := p.CmdFactory(env)
 
-	w, err := p.factory.SpawnWorkerWithTimeout(ctx, spawnCmd())
+	w, err := p.factory.SpawnWorkerWithContext(ctx, spawnCmd())
 	if err != nil {
 		return nil, errors.E(op, err)
 	}
@@ -359,7 +359,7 @@ func (p *Plugin) NewPool(ctx context.Context, cfg *pool.Config, env map[string]s
 }
 
 // creates relay and worker factory.
-func initFactory(log *zap.Logger, relay string, timeout time.Duration) (pool.Factory, error) {
+func initFactory(log *zap.Logger, relay string) (pool.Factory, error) {
 	const op = errors.Op("server_plugin_init_factory")
 	if relay == "" || relay == pipes {
 		return pipe.NewPipeFactory(log), nil
@@ -378,9 +378,9 @@ func initFactory(log *zap.Logger, relay string, timeout time.Duration) (pool.Fac
 	switch dsn[0] {
 	// sockets group
 	case unix:
-		return socket.NewSocketServer(lsn, timeout, log), nil
+		return socket.NewSocketServer(lsn, log), nil
 	case tcp:
-		return socket.NewSocketServer(lsn, timeout, log), nil
+		return socket.NewSocketServer(lsn, log), nil
 	default:
 		return nil, errors.E(op, errors.Network, errors.Str("invalid DSN (tcp://:6001, unix://file.sock)"))
 	}

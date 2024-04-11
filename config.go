@@ -23,9 +23,6 @@ type Config struct {
 	// "pipes", "tcp://:6001", "unix://rr.sock"
 	// This config section must not change on re-configuration.
 	Relay string `mapstructure:"relay"`
-	// RelayTimeout defines for how long socket factory will be waiting for worker connection. This config section
-	// must not change on re-configuration. Defaults to 60s.
-	RelayTimeout time.Duration `mapstructure:"relay_timeout"`
 }
 
 type InitConfig struct {
@@ -53,10 +50,6 @@ func (cfg *Config) InitDefaults() error {
 
 	if cfg.Relay == "" {
 		cfg.Relay = "pipes"
-	}
-
-	if cfg.RelayTimeout == 0 {
-		cfg.RelayTimeout = time.Second * 60
 	}
 
 	if cfg.OnInit != nil {
