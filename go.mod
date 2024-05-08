@@ -1,6 +1,6 @@
 module github.com/roadrunner-server/server/v4
 
-go 1.22.2
+go 1.22.3
 
 require (
 	github.com/roadrunner-server/errors v1.4.0
