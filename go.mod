@@ -4,7 +4,8 @@ go 1.22.4
 
 require (
 	github.com/roadrunner-server/errors v1.4.0
-	github.com/roadrunner-server/sdk/v4 v4.7.3
+	github.com/roadrunner-server/pool v1.0.0
+	github.com/roadrunner-server/tcplisten v1.5.0
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.27.0
@@ -26,8 +27,8 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
+	github.com/roadrunner-server/events v1.0.0 // indirect
 	github.com/roadrunner-server/goridge/v3 v3.8.2 // indirect
-	github.com/roadrunner-server/tcplisten v1.4.0 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	github.com/sagikazarmark/locafero v0.6.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/roadrunner-server/errors"
-	"github.com/roadrunner-server/sdk/v4/utils"
+	"github.com/roadrunner-server/pool/process"
 	"go.uber.org/zap"
 )
 
@@ -31,7 +31,7 @@ func (b *command) start() error {
 	cmd := b.createProcess(b.cfg.Env, b.cfg.Command)
 
 	if b.cfg.User != "" {
-		err := utils.ExecuteFromUser(cmd, b.cfg.User)
+		err := process.ExecuteFromUser(cmd, b.cfg.User)
 		if err != nil {
 			return errors.E(op, err)
 		}
