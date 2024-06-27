@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/roadrunner-server/errors"
-	"github.com/roadrunner-server/sdk/v4/payload"
+	"github.com/roadrunner-server/pool/payload"
 	serverImpl "github.com/roadrunner-server/server/v4"
 )
 

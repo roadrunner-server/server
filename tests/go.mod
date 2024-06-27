@@ -9,9 +9,9 @@ require (
 	github.com/roadrunner-server/http/v4 v4.7.6
 	github.com/roadrunner-server/logger/v4 v4.4.4
 	github.com/roadrunner-server/metrics/v4 v4.3.4
+	github.com/roadrunner-server/pool v1.0.0
 	github.com/roadrunner-server/prometheus/v4 v4.3.4
 	github.com/roadrunner-server/rpc/v4 v4.4.4
-	github.com/roadrunner-server/sdk/v4 v4.7.3
 	github.com/roadrunner-server/server/v4 v4.8.4
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.27.0
@@ -54,8 +54,10 @@ require (
 	github.com/quic-go/qpack v0.4.0 // indirect
 	github.com/quic-go/quic-go v0.45.0 // indirect
 	github.com/roadrunner-server/api/v4 v4.12.0 // indirect
+	github.com/roadrunner-server/events v1.0.0 // indirect
 	github.com/roadrunner-server/goridge/v3 v3.8.2 // indirect
-	github.com/roadrunner-server/tcplisten v1.4.0 // indirect
+	github.com/roadrunner-server/sdk/v4 v4.7.3 // indirect
+	github.com/roadrunner-server/tcplisten v1.5.0 // indirect
 	github.com/sagikazarmark/locafero v0.6.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
