@@ -10,7 +10,7 @@ import (
 	"github.com/roadrunner-server/pool/pool"
 	staticPool "github.com/roadrunner-server/pool/pool/static_pool"
 	"github.com/roadrunner-server/pool/worker"
-	"github.com/roadrunner-server/server/v4"
+	"github.com/roadrunner-server/server/v5"
 	"go.uber.org/zap"
 )
 

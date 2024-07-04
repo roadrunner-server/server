@@ -5,7 +5,7 @@ import (
 
 	"github.com/roadrunner-server/errors"
 	"github.com/roadrunner-server/pool/payload"
-	serverImpl "github.com/roadrunner-server/server/v4"
+	serverImpl "github.com/roadrunner-server/server/v5"
 )
 
 type Foo2 struct {

@@ -6,7 +6,7 @@ import (
 
 	"github.com/roadrunner-server/pool/payload"
 	poolImpl "github.com/roadrunner-server/pool/pool"
-	serverImpl "github.com/roadrunner-server/server/v4"
+	serverImpl "github.com/roadrunner-server/server/v5"
 	"go.uber.org/zap"
 )
 
