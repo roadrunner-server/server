@@ -12,15 +12,16 @@ import (
 	"time"
 
 	"github.com/roadrunner-server/errors"
-	"github.com/roadrunner-server/sdk/v4/ipc/pipe"
-	"github.com/roadrunner-server/sdk/v4/ipc/socket"
-	"github.com/roadrunner-server/sdk/v4/payload"
+	"github.com/roadrunner-server/pool/ipc/pipe"
+	"github.com/roadrunner-server/pool/ipc/socket"
+	"github.com/roadrunner-server/pool/payload"
+	"github.com/roadrunner-server/pool/process"
+	"github.com/roadrunner-server/tcplisten"
 	"go.uber.org/zap"
 
-	"github.com/roadrunner-server/sdk/v4/pool"
-	staticPool "github.com/roadrunner-server/sdk/v4/pool/static_pool"
-	"github.com/roadrunner-server/sdk/v4/utils"
-	"github.com/roadrunner-server/sdk/v4/worker"
+	"github.com/roadrunner-server/pool/pool"
+	staticPool "github.com/roadrunner-server/pool/pool/static_pool"
+	"github.com/roadrunner-server/pool/worker"
 )
 
 // Pool managed set of inner worker processes.
@@ -218,11 +219,11 @@ func (p *Plugin) CmdFactory(env map[string]string) func() *exec.Cmd {
 			}
 		}
 
-		utils.IsolateProcess(cmd)
+		process.IsolateProcess(cmd)
 		// if user is not empty, and OS is linux or macos
 		// execute php worker from that particular user
 		if p.cfg.User != "" {
-			err := utils.ExecuteFromUser(cmd, p.cfg.User)
+			err := process.ExecuteFromUser(cmd, p.cfg.User)
 			if err != nil {
 				return nil
 			}
@@ -314,11 +315,11 @@ func (p *Plugin) customCmd(env map[string]string) func(command []string) *exec.C
 			}
 		}
 
-		utils.IsolateProcess(cmd)
+		process.IsolateProcess(cmd)
 		// if a user is not empty, and OS is linux or macOS
 		// execute php worker from that particular user
 		if p.cfg.User != "" {
-			err := utils.ExecuteFromUser(cmd, p.cfg.User)
+			err := process.ExecuteFromUser(cmd, p.cfg.User)
 			if err != nil {
 				p.log.Panic("can't execute command from the user", zap.String("user", p.cfg.User), zap.Error(err))
 				return nil
@@ -370,7 +371,7 @@ func initFactory(log *zap.Logger, relay string) (pool.Factory, error) {
 		return nil, errors.E(op, errors.Network, errors.Str("invalid DSN (tcp://:6001, unix://file.sock)"))
 	}
 
-	lsn, err := utils.CreateListener(relay)
+	lsn, err := tcplisten.CreateListener(relay)
 	if err != nil {
 		return nil, errors.E(op, errors.Network, err)
 	}
