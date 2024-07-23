@@ -41,8 +41,8 @@ github.com/roadrunner-server/goridge/v3 v3.8.2 h1:4TpIJAMylMIVTva/L/STB4ZvYNVoQ7
 github.com/roadrunner-server/goridge/v3 v3.8.2/go.mod h1:7IIDW50j1saxnOxktFeUPpkSIfyvM/dYopTrbGWXboA=
 github.com/roadrunner-server/pool v1.0.0 h1:9iA67WLrJGRuigbN8qR6Rrs4OMy/TfkG7gSOS8sl0oU=
 github.com/roadrunner-server/pool v1.0.0/go.mod h1:fLWNBj17Bu/YAN61QoInLr3ieRifpg1qN/4LGJqPsKo=
-github.com/roadrunner-server/tcplisten v1.5.0 h1:kwJZAAjPt250fBpnglUJ9mKYlbMeKEXzHwOQ4dk205Q=
-github.com/roadrunner-server/tcplisten v1.5.0/go.mod h1:QSPMB61jFvCcvuRLAMhVIcrJhA6QoJAG+rSkz/vsT04=
+github.com/roadrunner-server/tcplisten v1.5.1 h1:CESLjVtnL0LEVaazzwEKUyQx84IcAgOQkdomA2+YHnY=
+github.com/roadrunner-server/tcplisten v1.5.1/go.mod h1:OrIW/gDTitYAQaDOtmyweYfXQGJ23J+wji0SIjk16Q0=
 github.com/rogpeppe/go-internal v1.12.0 h1:exVL4IDcn6na9z1rAb56Vxr+CgyK3nn3O+epU5NdKM8=
 github.com/rogpeppe/go-internal v1.12.0/go.mod h1:E+RYuTGaKKdloAfM02xzb0FW3Paa99yedzYV+kq4uf4=
 github.com/sagikazarmark/locafero v0.6.0 h1:ON7AQg37yzcRPU69mt7gwhFEBwxI6P9T4Qu3N51bwOk=
