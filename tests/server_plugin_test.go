@@ -31,9 +31,10 @@ func TestAppPipes(t *testing.T) {
 	cont := endure.New(slog.LevelDebug)
 
 	// config plugin
-	vp := &config.Plugin{}
-	vp.Path = "configs/.rr.yaml"
-	vp.Prefix = "rr"
+	vp := &config.Plugin{
+		Version: "v2024.2.0",
+		Path:    "configs/.rr.yaml",
+	}
 
 	err := cont.RegisterAll(
 		vp,
@@ -89,9 +90,10 @@ func TestAppPipesBigResp(t *testing.T) {
 	cont := endure.New(slog.LevelDebug)
 
 	// config plugin
-	vp := &config.Plugin{}
-	vp.Path = "configs/.rr-pipes-big-resp.yaml"
-	vp.Prefix = "rr"
+	vp := &config.Plugin{
+		Version: "v2024.2.0",
+		Path:    "configs/.rr-pipes-big-resp.yaml",
+	}
 
 	rd, wr, err := os.Pipe()
 	require.NoError(t, err)
@@ -159,9 +161,10 @@ func TestAppSockets(t *testing.T) {
 	cont := endure.New(slog.LevelDebug)
 
 	// config plugin
-	vp := &config.Plugin{}
-	vp.Path = "configs/.rr-sockets.yaml"
-	vp.Prefix = "rr"
+	vp := &config.Plugin{
+		Version: "v2024.2.0",
+		Path:    "configs/.rr-sockets.yaml",
+	}
 
 	err := cont.RegisterAll(
 		vp,
@@ -219,9 +222,9 @@ func TestAppPipesException(t *testing.T) {
 
 	// config plugin
 	vp := &config.Plugin{
+		Path:    "configs/.rr-script-err.yaml",
 		Version: "v2024.1.0",
 	}
-	vp.Path = "configs/.rr-script-err.yaml"
 
 	err := container.RegisterAll(
 		vp,
@@ -244,9 +247,11 @@ func TestAppTCPOnInit(t *testing.T) {
 	cont := endure.New(slog.LevelDebug)
 
 	// config plugin
-	vp := &config.Plugin{}
-	vp.Path = "configs/.rr-tcp-on-init.yaml"
-	vp.Prefix = "rr"
+	vp := &config.Plugin{
+		Version: "v2024.1.0",
+		Path:    "configs/.rr-tcp-on-init.yaml",
+	}
+
 	err := cont.Register(vp)
 	require.NoError(t, err)
 
@@ -312,9 +317,11 @@ func TestAppSocketsOnInit(t *testing.T) {
 	cont := endure.New(slog.LevelDebug)
 
 	// config plugin
-	vp := &config.Plugin{}
-	vp.Path = "configs/.rr-sockets-on-init.yaml"
-	vp.Prefix = "rr"
+	vp := &config.Plugin{
+		Version: "v2024.1.0",
+		Path:    "configs/.rr-sockets-on-init.yaml",
+	}
+
 	err := cont.Register(vp)
 	require.NoError(t, err)
 
@@ -380,9 +387,11 @@ func TestAppSocketsOnInitFastClose(t *testing.T) {
 	cont := endure.New(slog.LevelDebug)
 
 	// config plugin
-	vp := &config.Plugin{}
-	vp.Path = "configs/.rr-sockets-on-init-fast-close.yaml"
-	vp.Prefix = "rr"
+	vp := &config.Plugin{
+		Version: "v2024.1.0",
+		Path:    "configs/.rr-sockets-on-init-fast-close.yaml",
+	}
+
 	err := cont.Register(vp)
 	require.NoError(t, err)
 
@@ -443,9 +452,10 @@ func TestAppTCP(t *testing.T) {
 	cont := endure.New(slog.LevelDebug)
 
 	// config plugin
-	vp := &config.Plugin{}
-	vp.Path = "configs/.rr-tcp.yaml"
-	vp.Prefix = "rr"
+	vp := &config.Plugin{
+		Version: "v2024.1.0",
+		Path:    "configs/.rr-tcp.yaml",
+	}
 
 	err := cont.RegisterAll(
 		vp,
@@ -501,9 +511,11 @@ func TestAppWrongConfig(t *testing.T) {
 	container := endure.New(slog.LevelDebug)
 
 	// config plugin
-	vp := &config.Plugin{}
-	vp.Path = "configs/.rrrrrrrrrr.yaml"
-	vp.Prefix = "rr"
+	vp := &config.Plugin{
+		Version: "v2024.1.0",
+		Path:    "configs/.rrrrrrrrrr.yaml",
+	}
+
 	err := container.Register(vp)
 	require.NoError(t, err)
 
@@ -524,8 +536,8 @@ func TestAppWrongRelay(t *testing.T) {
 
 	// config plugin
 	vp := &config.Plugin{
-		Path:   "configs/.rr-wrong-relay.yaml",
-		Prefix: "rr",
+		Version: "v2024.1.0",
+		Path:    "configs/.rr-wrong-relay.yaml",
 	}
 
 	err := container.Register(vp)
@@ -553,9 +565,11 @@ func TestAppWrongCommand(t *testing.T) {
 	container := endure.New(slog.LevelDebug)
 
 	// config plugin
-	vp := &config.Plugin{}
-	vp.Path = "configs/.rr-wrong-command.yaml"
-	vp.Prefix = "rr"
+	vp := &config.Plugin{
+		Version: "v2024.1.0",
+		Path:    "configs/.rr-wrong-command.yaml",
+	}
+
 	err := container.Register(vp)
 	require.NoError(t, err)
 
@@ -579,9 +593,11 @@ func TestAppWrongCommandOnInit(t *testing.T) {
 	container := endure.New(slog.LevelDebug)
 
 	// config plugin
-	vp := &config.Plugin{}
-	vp.Path = "configs/.rr-wrong-command-on-init.yaml"
-	vp.Prefix = "rr"
+	vp := &config.Plugin{
+		Version: "v2024.1.0",
+		Path:    "configs/.rr-wrong-command-on-init.yaml",
+	}
+
 	err := container.Register(vp)
 	require.NoError(t, err)
 
@@ -605,9 +621,11 @@ func TestAppNoAppSectionInConfig(t *testing.T) {
 	container := endure.New(slog.LevelDebug)
 
 	// config plugin
-	vp := &config.Plugin{}
-	vp.Path = "configs/.rr-wrong-command.yaml"
-	vp.Prefix = "rr"
+	vp := &config.Plugin{
+		Version: "v2024.1.0",
+		Path:    "configs/.rr-wrong-command.yaml",
+	}
+
 	err := container.Register(vp)
 	require.NoError(t, err)
 
@@ -631,9 +649,10 @@ func TestOnInitMetrics(t *testing.T) {
 	cont := endure.New(slog.LevelDebug)
 
 	// config plugin
-	vp := &config.Plugin{}
-	vp.Path = "configs/.rr-metrics-oninit.yaml"
-	vp.Prefix = "rr"
+	vp := &config.Plugin{
+		Version: "v2024.1.0",
+		Path:    "configs/.rr-metrics-oninit.yaml",
+	}
 
 	err := cont.RegisterAll(
 		vp,

@@ -198,8 +198,8 @@ func (p *Plugin) Stop(ctx context.Context) error {
 }
 
 // CmdFactory provides worker command factory associated with given context
-func (p *Plugin) CmdFactory(env map[string]string) func() *exec.Cmd {
-	return func() *exec.Cmd {
+func (p *Plugin) CmdFactory(env map[string]string) func() (*exec.Cmd, error) {
+	return func() (*exec.Cmd, error) {
 		var cmd *exec.Cmd
 
 		if len(p.preparedCmd) == 1 {
@@ -225,11 +225,11 @@ func (p *Plugin) CmdFactory(env map[string]string) func() *exec.Cmd {
 		if p.cfg.User != "" {
 			err := process.ExecuteFromUser(cmd, p.cfg.User)
 			if err != nil {
-				return nil
+				return nil, err
 			}
 		}
 
-		return cmd
+		return cmd, nil
 	}
 }
 
@@ -334,9 +334,12 @@ func (p *Plugin) customCmd(env map[string]string) func(command []string) *exec.C
 func (p *Plugin) NewWorker(ctx context.Context, env map[string]string) (*worker.Process, error) {
 	const op = errors.Op("server_plugin_new_worker")
 
-	spawnCmd := p.CmdFactory(env)
+	spawnCmd, err := p.CmdFactory(env)()
+	if err != nil {
+		return nil, errors.E(op, err)
+	}
 
-	w, err := p.factory.SpawnWorkerWithContext(ctx, spawnCmd())
+	w, err := p.factory.SpawnWorkerWithContext(ctx, spawnCmd)
 	if err != nil {
 		return nil, errors.E(op, err)
 	}
