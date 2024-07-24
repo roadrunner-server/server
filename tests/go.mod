@@ -9,7 +9,7 @@ require (
 	github.com/roadrunner-server/http/v5 v5.0.0
 	github.com/roadrunner-server/logger/v5 v5.0.0
 	github.com/roadrunner-server/metrics/v5 v5.0.0
-	github.com/roadrunner-server/pool v1.0.0
+	github.com/roadrunner-server/pool v1.0.1
 	github.com/roadrunner-server/prometheus/v5 v5.0.0
 	github.com/roadrunner-server/rpc/v5 v5.0.0
 	github.com/roadrunner-server/server/v5 v5.0.0
@@ -58,9 +58,9 @@ require (
 	github.com/quic-go/quic-go v0.45.1 // indirect
 	github.com/roadrunner-server/api/v4 v4.15.0 // indirect
 	github.com/roadrunner-server/context v1.0.0 // indirect
-	github.com/roadrunner-server/events v1.0.0 // indirect
-	github.com/roadrunner-server/goridge/v3 v3.8.2 // indirect
-	github.com/roadrunner-server/tcplisten v1.5.0 // indirect
+	github.com/roadrunner-server/events v1.0.1 // indirect
+	github.com/roadrunner-server/goridge/v3 v3.8.3 // indirect
+	github.com/roadrunner-server/tcplisten v1.5.1 // indirect
 	github.com/sagikazarmark/locafero v0.6.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
@@ -85,7 +85,7 @@ require (
 	go.uber.org/mock v0.4.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.25.0 // indirect
-	golang.org/x/exp v0.0.0-20240707233637-46b078467d37 // indirect
+	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 	golang.org/x/mod v0.19.0 // indirect
 	golang.org/x/net v0.27.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
