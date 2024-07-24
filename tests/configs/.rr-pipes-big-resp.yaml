@@ -6,7 +6,7 @@ server:
   relay_timeout: "20s"
 
 logs:
-  mode: production
-  level: info
+  mode: development
+  level: debug
   output: stderr
   err_output: stderr
