@@ -5,7 +5,7 @@ go 1.22
 toolchain go1.22.5
 
 require (
-	github.com/roadrunner-server/errors v1.4.0
+	github.com/roadrunner-server/errors v1.4.1
 	github.com/roadrunner-server/pool v1.0.1
 	github.com/roadrunner-server/tcplisten v1.5.1
 	github.com/spf13/viper v1.19.0
