@@ -2,7 +2,6 @@ package tests
 
 import (
 	"context"
-	"os/exec"
 	"time"
 
 	"github.com/roadrunner-server/errors"
@@ -20,25 +19,24 @@ const Response = "test"
 type Configurer interface {
 	// UnmarshalKey takes a single key and unmarshal it into a Struct.
 	UnmarshalKey(name string, out any) error
-	// Has checks if config section exists.
+	// Has checks if a config section exists.
 	Has(name string) bool
 }
 
 // Server creates workers for the application.
 type Server interface {
-	CmdFactory(env map[string]string) func() *exec.Cmd
 	NewPool(ctx context.Context, cfg *pool.Config, env map[string]string, _ *zap.Logger) (*staticPool.Pool, error)
 	NewWorker(ctx context.Context, env map[string]string) (*worker.Process, error)
 }
 
 type Pool interface {
-	// Workers returns worker list associated with the pool.
+	// Workers return a worker list associated with the pool.
 	Workers() (workers []*worker.Process)
 	// Exec payload
 	Exec(ctx context.Context, p *payload.Payload, stopCh chan struct{}) (chan *staticPool.PExec, error)
-	// Reset kill all workers inside the watcher and replaces with new
+	// Reset kills all workers inside the watcher and replaces with new
 	Reset(ctx context.Context) error
-	// Destroy all underlying stack (but let them complete the task).
+	// Destroy all underlying stacks (but let them complete the task).
 	Destroy(ctx context.Context)
 }
 
@@ -84,13 +82,6 @@ func (f *Foo) Serve() chan error {
 	err = f.configProvider.UnmarshalKey(ConfigSection, conf)
 	if err != nil {
 		errCh <- err
-		return errCh
-	}
-
-	// test CMDFactory
-	cmd := f.wf.CmdFactory(nil)
-	if cmd == nil {
-		errCh <- errors.E(op, errors.Str("command is nil"))
 		return errCh
 	}
 

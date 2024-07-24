@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/exec"
 	"os/user"
 	"strconv"
 	"strings"
@@ -12,67 +11,12 @@ import (
 	"time"
 
 	"github.com/roadrunner-server/errors"
-	"github.com/roadrunner-server/pool/ipc/pipe"
-	"github.com/roadrunner-server/pool/ipc/socket"
-	"github.com/roadrunner-server/pool/payload"
-	"github.com/roadrunner-server/pool/process"
-	"github.com/roadrunner-server/tcplisten"
 	"go.uber.org/zap"
 
 	"github.com/roadrunner-server/pool/pool"
 	staticPool "github.com/roadrunner-server/pool/pool/static_pool"
 	"github.com/roadrunner-server/pool/worker"
 )
-
-// Pool managed set of inner worker processes.
-type Pool interface {
-	// GetConfig returns pool configuration.
-	GetConfig() *pool.Config
-	// Workers returns worker list associated with the pool.
-	Workers() (workers []*worker.Process)
-	// RemoveWorker removes worker from the pool.
-	RemoveWorker(ctx context.Context) error
-	// AddWorker adds worker to the pool.
-	AddWorker() error
-	// Exec payload
-	Exec(ctx context.Context, p *payload.Payload, stopCh chan struct{}) (chan *staticPool.PExec, error)
-	// Reset kill all workers inside the watcher and replaces with new
-	Reset(ctx context.Context) error
-	// Destroy all underlying stack (but let them complete the task).
-	Destroy(ctx context.Context)
-}
-
-const (
-	// PluginName for the server
-	PluginName string = "server"
-	// RPCPluginName is the name of the RPC plugin, should be in sync with rpc/config.go
-	RPCPluginName string = "rpc"
-	// RrRelay env variable key (internal)
-	RrRelay string = "RR_RELAY"
-	// RrRPC env variable key (internal) if the RPC presents
-	RrRPC string = "RR_RPC"
-	// RrVersion env variable
-	RrVersion string = "RR_VERSION"
-
-	// internal
-	delim string = "://"
-	unix  string = "unix"
-	tcp   string = "tcp"
-	pipes string = "pipes"
-)
-
-type Configurer interface {
-	// UnmarshalKey takes a single key and unmarshal it into a Struct.
-	UnmarshalKey(name string, out any) error
-	// Has checks if a config section exists.
-	Has(name string) bool
-	// RRVersion is the roadrunner current version
-	RRVersion() string
-}
-
-type NamedLogger interface {
-	NamedLogger(name string) *zap.Logger
-}
 
 // Plugin manages worker
 type Plugin struct {
@@ -114,9 +58,9 @@ func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 	p.log = new(zap.Logger)
 	p.log = log.NamedLogger(PluginName)
 
-	// here we may have 2 cases: command declared as a space separated string or as a slice
+	// here we may have 2 cases: command declared as a space-separated string or as a slice
 	switch len(p.cfg.Command) {
-	// command defined as a space separated string
+	// command defined as a space-separated string
 	case 1:
 		// we know that the len is 1, so we can safely use the first element
 		p.preparedCmd = append(p.preparedCmd, strings.Split(p.cfg.Command[0], " ")...)
@@ -150,7 +94,7 @@ func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 	return nil
 }
 
-// Name contains service name.
+// Name contains the service name.
 func (p *Plugin) Name() string {
 	return PluginName
 }
@@ -197,40 +141,33 @@ func (p *Plugin) Stop(ctx context.Context) error {
 	return p.factory.Close()
 }
 
-// CmdFactory provides worker command factory associated with given context
-func (p *Plugin) CmdFactory(env map[string]string) func() *exec.Cmd {
-	return func() *exec.Cmd {
-		var cmd *exec.Cmd
+// NewWorker issues new standalone worker.
+func (p *Plugin) NewWorker(ctx context.Context, env map[string]string) (*worker.Process, error) {
+	const op = errors.Op("server_plugin_new_worker")
 
-		if len(p.preparedCmd) == 1 {
-			cmd = exec.Command(p.preparedCmd[0])
-		} else {
-			cmd = exec.Command(p.preparedCmd[0], p.preparedCmd[1:]...)
-		}
+	spawnCmd := p.cmdFactory(env)
 
-		// copy prepared envs
-		cmd.Env = make([]string, len(p.preparedEnvs))
-		copy(cmd.Env, p.preparedEnvs)
-
-		// append external envs
-		if len(env) > 0 {
-			for k, v := range env {
-				cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", strings.ToUpper(k), v))
-			}
-		}
-
-		process.IsolateProcess(cmd)
-		// if user is not empty, and OS is linux or macos
-		// execute php worker from that particular user
-		if p.cfg.User != "" {
-			err := process.ExecuteFromUser(cmd, p.cfg.User)
-			if err != nil {
-				return nil
-			}
-		}
-
-		return cmd
+	w, err := p.factory.SpawnWorkerWithContext(ctx, spawnCmd())
+	if err != nil {
+		return nil, errors.E(op, err)
 	}
+
+	return w, nil
+}
+
+// NewPool issues new worker pool.
+func (p *Plugin) NewPool(ctx context.Context, cfg *pool.Config, env map[string]string, _ *zap.Logger) (*staticPool.Pool, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	pl, err := staticPool.NewPool(ctx, pool.Command(p.customCmd(env)), p.factory, cfg, p.log, staticPool.WithQueueSize(cfg.MaxQueueSize))
+	if err != nil {
+		return nil, err
+	}
+
+	p.pools = append(p.pools, pl)
+
+	return pl, nil
 }
 
 // UID returns a user id (if specified by user)
@@ -273,116 +210,4 @@ func (p *Plugin) GID() int {
 	}
 
 	return int(grI32)
-}
-
-// customCmd used as and enhancement for the CmdFactory to use with a custom command string (used by default)
-func (p *Plugin) customCmd(env map[string]string) func(command []string) *exec.Cmd {
-	return func(command []string) *exec.Cmd {
-		// if no command provided, use the server's one
-		if len(command) == 0 {
-			command = p.cfg.Command
-		}
-
-		var cmd *exec.Cmd
-
-		preparedCmd := make([]string, 0, 5)
-		// here we may have 2 cases: command declared as a space separated string or as a slice
-		switch len(command) {
-		// command defined as a space separated string
-		case 1:
-			// we know that the len is 1, so we can safely use the first element
-			preparedCmd = append(preparedCmd, strings.Split(command[0], " ")...)
-		default:
-			// we have a slice with a 2 or more elements
-			// first element is the command, the rest are arguments
-			preparedCmd = command
-		}
-
-		if len(preparedCmd) == 1 {
-			cmd = exec.Command(preparedCmd[0])
-		} else {
-			cmd = exec.Command(preparedCmd[0], preparedCmd[1:]...)
-		}
-
-		// copy prepared envs
-		cmd.Env = make([]string, len(p.preparedEnvs))
-		copy(cmd.Env, p.preparedEnvs)
-
-		// append external envs
-		if len(env) > 0 {
-			for k, v := range env {
-				cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", strings.ToUpper(k), v))
-			}
-		}
-
-		process.IsolateProcess(cmd)
-		// if a user is not empty, and OS is linux or macOS
-		// execute php worker from that particular user
-		if p.cfg.User != "" {
-			err := process.ExecuteFromUser(cmd, p.cfg.User)
-			if err != nil {
-				p.log.Panic("can't execute command from the user", zap.String("user", p.cfg.User), zap.Error(err))
-				return nil
-			}
-		}
-
-		return cmd
-	}
-}
-
-// NewWorker issues new standalone worker.
-func (p *Plugin) NewWorker(ctx context.Context, env map[string]string) (*worker.Process, error) {
-	const op = errors.Op("server_plugin_new_worker")
-
-	spawnCmd := p.CmdFactory(env)
-
-	w, err := p.factory.SpawnWorkerWithContext(ctx, spawnCmd())
-	if err != nil {
-		return nil, errors.E(op, err)
-	}
-
-	return w, nil
-}
-
-// NewPool issues new worker pool.
-func (p *Plugin) NewPool(ctx context.Context, cfg *pool.Config, env map[string]string, _ *zap.Logger) (*staticPool.Pool, error) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
-	pl, err := staticPool.NewPool(ctx, p.customCmd(env), p.factory, cfg, p.log, staticPool.WithQueueSize(cfg.MaxQueueSize))
-	if err != nil {
-		return nil, err
-	}
-
-	p.pools = append(p.pools, pl)
-
-	return pl, nil
-}
-
-// creates relay and worker factory.
-func initFactory(log *zap.Logger, relay string) (pool.Factory, error) {
-	const op = errors.Op("server_plugin_init_factory")
-	if relay == "" || relay == pipes {
-		return pipe.NewPipeFactory(log), nil
-	}
-
-	dsn := strings.Split(relay, delim)
-	if len(dsn) != 2 {
-		return nil, errors.E(op, errors.Network, errors.Str("invalid DSN (tcp://:6001, unix://file.sock)"))
-	}
-
-	lsn, err := tcplisten.CreateListener(relay)
-	if err != nil {
-		return nil, errors.E(op, errors.Network, err)
-	}
-
-	switch dsn[0] {
-	// sockets group
-	case unix:
-		return socket.NewSocketServer(lsn, log), nil
-	case tcp:
-		return socket.NewSocketServer(lsn, log), nil
-	default:
-		return nil, errors.E(op, errors.Network, errors.Str("invalid DSN (tcp://:6001, unix://file.sock)"))
-	}
 }

@@ -38,13 +38,6 @@ func (f *Foo2) Serve() chan error {
 		return errCh
 	}
 
-	// test CMDFactory
-	cmd := f.wf.CmdFactory(nil)
-	if cmd == nil {
-		errCh <- errors.E(op, "command is nil")
-		return errCh
-	}
-
 	// test worker creation
 	w, err := f.wf.NewWorker(context.Background(), nil)
 	if err != nil {
