@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/roadrunner-server/errors"
 	"go.uber.org/zap"
@@ -29,8 +28,6 @@ type Plugin struct {
 
 	log     *zap.Logger
 	factory pool.Factory
-
-	pools []Pool
 }
 
 // Init application provider.
@@ -84,8 +81,6 @@ func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 
 	p.preparedEnvs = append(p.preparedEnvs, fmt.Sprintf("%s=%s", RrVersion, cfg.RRVersion()))
 
-	p.pools = make([]Pool, 0, 4)
-
 	p.factory, err = initFactory(p.log, p.cfg.Relay)
 	if err != nil {
 		return errors.E(op, err)
@@ -114,30 +109,10 @@ func (p *Plugin) Serve() chan error {
 }
 
 // Stop used to stop all allocated pools
-func (p *Plugin) Stop(ctx context.Context) error {
+func (p *Plugin) Stop(_ context.Context) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	wg := &sync.WaitGroup{}
-	wg.Add(len(p.pools))
-
-	// destroy all pools in parallel
-	for i := 0; i < len(p.pools); i++ {
-		go func(idx int) {
-			if p.pools[idx] == nil || p.pools[idx].(*staticPool.Pool) == nil {
-				wg.Done()
-				return
-			}
-			ctx2, cancel := context.WithTimeout(ctx, p.pools[idx].GetConfig().DestroyTimeout)
-			p.pools[idx].Destroy(ctx2)
-			cancel()
-			wg.Done()
-		}(i)
-	}
-
-	wg.Wait()
-	// just to be sure that all logs are synced
-	time.Sleep(time.Second)
 	return p.factory.Close()
 }
 
@@ -164,8 +139,6 @@ func (p *Plugin) NewPool(ctx context.Context, cfg *pool.Config, env map[string]s
 	if err != nil {
 		return nil, err
 	}
-
-	p.pools = append(p.pools, pl)
 
 	return pl, nil
 }
