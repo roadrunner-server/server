@@ -56,6 +56,8 @@ func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 
 	p.log = log.NamedLogger(PluginName)
 
+	// let's say we always have "app" channel.
+	// By separating the channels, we will be able to flexibly configure the RR logs and the app logs separately.
 	p.appLog = log.NamedLogger("app") // could be const from AppLogger or ...
 
 	// here we may have 2 cases: command declared as a space-separated string or as a slice
