@@ -27,8 +27,8 @@ type Plugin struct {
 	preparedEnvs []string
 
 	appLog *zap.Logger
+	log    *zap.Logger
 
-	log     *zap.Logger
 	factory pool.Factory
 }
 
