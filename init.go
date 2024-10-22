@@ -13,14 +13,16 @@ import (
 )
 
 type command struct {
-	log *zap.Logger
-	cfg *InitConfig
+	log    *zap.Logger
+	appLog *zap.Logger
+	cfg    *InitConfig
 }
 
-func newCommand(log *zap.Logger, cfg *InitConfig) *command {
+func newCommand(log *zap.Logger, appLog *zap.Logger, cfg *InitConfig) *command {
 	return &command{
-		log: log,
-		cfg: cfg,
+		log:    log,
+		cfg:    cfg,
+		appLog: appLog,
 	}
 }
 
@@ -67,8 +69,13 @@ func (b *command) start() error {
 	}
 }
 
+// With these separation we do not need AppLogger plugin anymore. Just write logs to stdout/stderr
 func (b *command) Write(data []byte) (int, error) {
-	b.log.Info(string(data))
+	// All output from the application does not intersect with logs from the Server plugin
+	// For example: destroy signal received	{"timeout": 60000000000} is not necessary for logging
+	b.appLog.Info(string(data))
+	// Maybe use Debug for all output? We should control app logs inside app
+	// b.appLog.Debug(string(data))
 	return len(data), nil
 }
 
