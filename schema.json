@@ -32,22 +32,11 @@
           "$ref": "https://raw.githubusercontent.com/roadrunner-server/roadrunner/refs/heads/master/schemas/config/3.0.schema.json#/definitions/Duration",
           "default": "60s"
         },
-        "user": {
-          "description": "Username (not UID) of the user from whom the on_init command is executed. The RoadRunner process user will be used if not provided. The RoadRunner process must be run as root in order to specify a different user.",
-          "type": "string",
-          "examples": [
-            "www-data"
-          ]
+        "user":{
+          "$ref": "#/$defs/User"
         },
         "env": {
-          "description": "Environment variables for the executed command.",
-          "type": "object",
-          "patternProperties": {
-            "^[a-zA-Z0-9._-]+$": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
+          "$ref": "#/$defs/EnvironmentVariables"
         }
       }
     },
@@ -60,12 +49,7 @@
       ]
     },
     "user": {
-      "description": "User name (not UID) for the worker processes. The RR process user will be used if not provided. The RoadRunner process must be run as root for this to work.",
-      "type": "string",
-      "minLength": 1,
-      "examples": [
-        "www-data"
-      ]
+      "$ref": "#/$defs/User"
     },
     "group": {
       "description": "Group name (not GID) for the worker processes. The RR process user group will be used if not provided. The RoadRunner process must be run as root for this to work.",
@@ -76,15 +60,7 @@
       ]
     },
     "env": {
-      "description": "Environment variables for the worker processes.",
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": false,
-      "patternProperties": {
-        "^[a-zA-Z0-9._-]+$": {
-          "type": "string"
-        }
-      }
+      "$ref": "#/$defs/EnvironmentVariables"
     },
     "relay": {
       "description": "Worker relay method. Can be 'pipes', a TCP address (e.g. tcp://127.0.0.1:6002) or a socket (e.g. unix:///var/run/rr.sock).",
@@ -95,6 +71,27 @@
         "pipes",
         "tcp://127.0.0.1:6002",
         "unix:///var/run/rr.sock"
+      ]
+    }
+  },
+  "$defs": {
+    "EnvironmentVariables": {
+      "description": "Environment variables for the process or command.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-zA-Z0-9._-]+$": {
+          "type": "string"
+        }
+      }
+    },
+    "User": {
+      "description": "Username (not UID) of the user from whom the command or process is executed. The RoadRunner process user will be used if not provided. The RoadRunner process must be run as root in order to specify a different user.",
+      "type": "string",
+      "minLength": 1,
+      "examples": [
+        "www-data"
       ]
     }
   }
