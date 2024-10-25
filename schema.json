@@ -1,0 +1,98 @@
+{
+  "$id": "https://raw.githubusercontent.com/roadrunner-server/server/refs/heads/master/schema.json",
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "description": "All the valid configuration parameters for the Server plugin for RoadRunner.",
+  "type": "object",
+  "title": "roadrunner-server",
+  "additionalProperties": false,
+  "required": [
+    "command"
+  ],
+  "properties": {
+    "on_init": {
+      "description": "Arbitrary command to execute before RR starts allocating workers.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "command"
+      ],
+      "properties": {
+        "command": {
+          "description": "Command to execute. It can be any script or binary that RoadRunner has access to.",
+          "type": "string",
+          "minLength": 1,
+          "examples": [
+            "php not-worker.php",
+            "sh script.sh",
+            "start script.bat"
+          ]
+        },
+        "exec_timeout": {
+          "description": "Script execution timeout. Zero or empty defaults to 60s.",
+          "$ref": "https://raw.githubusercontent.com/roadrunner-server/roadrunner/refs/heads/master/schemas/config/3.0.schema.json#/definitions/Duration",
+          "default": "60s"
+        },
+        "user":{
+          "$ref": "#/$defs/User"
+        },
+        "env": {
+          "$ref": "#/$defs/EnvironmentVariables"
+        }
+      }
+    },
+    "command": {
+      "description": "The command used to start workers, including any required arguments. Any plugins that implement a worker pool will inherit this command if they do not specify an override.",
+      "type": "string",
+      "minLength": 1,
+      "examples": [
+        "php psr-worker.php"
+      ]
+    },
+    "user": {
+      "$ref": "#/$defs/User"
+    },
+    "group": {
+      "description": "Group name (not GID) for the worker processes. The RR process user group will be used if not provided. The RoadRunner process must be run as root for this to work.",
+      "type": "string",
+      "minLength": 1,
+      "examples": [
+        "www-data"
+      ]
+    },
+    "env": {
+      "$ref": "#/$defs/EnvironmentVariables"
+    },
+    "relay": {
+      "description": "Worker relay method. Can be 'pipes', a TCP address (e.g. tcp://127.0.0.1:6002) or a socket (e.g. unix:///var/run/rr.sock).",
+      "type": "string",
+      "default": "pipes",
+      "minLength": 1,
+      "examples": [
+        "pipes",
+        "tcp://127.0.0.1:6002",
+        "unix:///var/run/rr.sock"
+      ]
+    }
+  },
+  "$defs": {
+    "EnvironmentVariables": {
+      "description": "Environment variables for the process or command.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-zA-Z0-9._-]+$": {
+          "type": "string"
+        }
+      }
+    },
+    "User": {
+      "description": "Username (not UID) of the user from whom the command or process is executed. The RoadRunner process user will be used if not provided. The RoadRunner process must be run as root in order to specify a different user.",
+      "type": "string",
+      "minLength": 1,
+      "examples": [
+        "www-data"
+      ]
+    }
+  }
+}
