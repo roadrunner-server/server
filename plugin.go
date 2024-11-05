@@ -32,6 +32,9 @@ type Plugin struct {
 	factory pool.Factory
 }
 
+// AppLoggerChannel Always could depend to roadrunner-server/app-logger?
+const AppLoggerChannel = "app"
+
 // Init application provider.
 func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 	const op = errors.Op("server_plugin_init")
@@ -56,9 +59,9 @@ func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 
 	p.log = log.NamedLogger(PluginName)
 
-	// let's say we always have "app" channel.
-	// By separating the channels, we will be able to flexibly configure the RR logs and the app logs separately.
-	p.appLog = log.NamedLogger("app") // could be const from AppLogger or ...
+	// We always have "app" channel because we are Application Server :)
+	// By separating the channels, we will be able to flexibly configure the Server logs and the App logs separately.
+	p.appLog = log.NamedLogger(AppLoggerChannel)
 
 	// here we may have 2 cases: command declared as a space-separated string or as a slice
 	switch len(p.cfg.Command) {

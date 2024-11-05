@@ -21,8 +21,8 @@ type command struct {
 func newCommand(log *zap.Logger, appLog *zap.Logger, cfg *InitConfig) *command {
 	return &command{
 		log:    log,
-		cfg:    cfg,
 		appLog: appLog,
+		cfg:    cfg,
 	}
 }
 
@@ -73,9 +73,7 @@ func (b *command) start() error {
 func (b *command) Write(data []byte) (int, error) {
 	// All output from the application does not intersect with logs from the Server plugin
 	// For example: destroy signal received	{"timeout": 60000000000} is not necessary for logging
-	// Maybe use Debug for all output? We should control app logs inside app
-	b.appLog.Debug(string(data))
-	// b.appLog.Info(string(data))
+	b.appLog.Error(string(data))
 	return len(data), nil
 }
 
