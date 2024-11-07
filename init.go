@@ -73,7 +73,7 @@ func (b *command) start() error {
 func (b *command) Write(data []byte) (int, error) {
 	// All output from the application does not intersect with logs from the Server plugin
 	// For example: destroy signal received	{"timeout": 60000000000} is not necessary for logging
-	b.appLog.Error(string(data))
+	b.appLog.Info(string(data))
 	return len(data), nil
 }
 
