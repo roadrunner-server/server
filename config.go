@@ -34,6 +34,8 @@ type InitConfig struct {
 	Env map[string]string `mapstructure:"env"`
 	// Env represents UID
 	User string `mapstructure:"user"`
+	// ExitOnError defines if the RR should exit if the command fails
+	ExitOnError bool `mapstructure:"exit_on_error"`
 }
 
 // RPCConfig should be in sync with rpc/config.go
