@@ -26,7 +26,7 @@ func newCommand(log *zap.Logger, cfg *InitConfig) *command {
 
 func (b *command) start() error {
 	const op = errors.Op("server_on_init")
-	stopCh := make(chan struct{}, 1)
+	stopCh := make(chan error, 1)
 
 	cmd := b.createProcess(b.cfg.Env, b.cfg.Command)
 
@@ -48,9 +48,11 @@ func (b *command) start() error {
 		errW := cmd.Wait()
 		if errW != nil {
 			b.log.Error("process wait", zap.Error(errW))
+			stopCh <- errW
+			return
 		}
 
-		stopCh <- struct{}{}
+		stopCh <- nil
 	}()
 
 	select {
@@ -58,12 +60,14 @@ func (b *command) start() error {
 		err = cmd.Process.Kill()
 		if err != nil {
 			b.log.Error("process killed", zap.Error(err))
+			return err
 		}
+
 		return nil
 
-	case <-stopCh:
+	case err := <-stopCh:
 		timer.Stop()
-		return nil
+		return err
 	}
 }
 

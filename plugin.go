@@ -102,6 +102,11 @@ func (p *Plugin) Serve() chan error {
 		err := newCommand(p.log, p.cfg.OnInit).start()
 		if err != nil {
 			p.log.Error("on_init was finished with errors", zap.Error(err))
+			// if exit_on_error is set, we should return error and stop the server
+			if p.cfg.OnInit.ExitOnError {
+				errCh <- err
+				return errCh
+			}
 		}
 	}
 

@@ -1,0 +1,13 @@
+version: '3'
+
+server:
+  on_init:
+    command: "foooooo"
+    exec_timeout: 200s
+    exit_on_error: true
+
+  command: "php some-random-command"
+
+logs:
+  mode: development
+  level: debug
