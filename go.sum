@@ -42,6 +42,7 @@ github.com/roadrunner-server/pool v1.1.1/go.mod h1:p6t1w4hcNgZGTgap+RYqoPIQ9jDXJ
 github.com/roadrunner-server/tcplisten v1.5.1 h1:CESLjVtnL0LEVaazzwEKUyQx84IcAgOQkdomA2+YHnY=
 github.com/roadrunner-server/tcplisten v1.5.1/go.mod h1:OrIW/gDTitYAQaDOtmyweYfXQGJ23J+wji0SIjk16Q0=
 github.com/rogpeppe/go-internal v1.13.1 h1:KvO1DLK/DRN07sQ1LQKScxyZJuNnedQ5/wKSR38lUII=
+github.com/rogpeppe/go-internal v1.13.1/go.mod h1:uMEvuHeurkdAXX61udpOXGD/AzZDWNMNyH2VO9fmH0o=
 github.com/sagikazarmark/locafero v0.6.0 h1:ON7AQg37yzcRPU69mt7gwhFEBwxI6P9T4Qu3N51bwOk=
 github.com/sagikazarmark/locafero v0.6.0/go.mod h1:77OmuIc6VTraTXKXIs/uvUxKGUXjE1GbemJYHqdNjX0=
 github.com/sagikazarmark/slog-shim v0.1.0 h1:diDBnUNK9N/354PgrxMywXnAwEr1QZcOr6gto+ugjYE=
