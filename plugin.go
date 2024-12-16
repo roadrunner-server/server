@@ -148,6 +148,18 @@ func (p *Plugin) NewPool(ctx context.Context, cfg *pool.Config, env map[string]s
 	return pl, nil
 }
 
+func (p *Plugin) NewPoolWithOptions(ctx context.Context, cfg *pool.Config, env map[string]string, _ *zap.Logger, options ...staticPool.Options) (*staticPool.Pool, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	pl, err := staticPool.NewPool(ctx, pool.Command(p.customCmd(env)), p.factory, cfg, p.log, options...)
+	if err != nil {
+		return nil, err
+	}
+
+	return pl, nil
+}
+
 // UID returns a user id (if specified by user)
 func (p *Plugin) UID() int {
 	if p.cfg.User == "" {
