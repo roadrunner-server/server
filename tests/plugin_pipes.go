@@ -26,6 +26,7 @@ type Configurer interface {
 // Server creates workers for the application.
 type Server interface {
 	NewPool(ctx context.Context, cfg *pool.Config, env map[string]string, _ *zap.Logger) (*staticPool.Pool, error)
+	NewPoolWithOptions(ctx context.Context, cfg *pool.Config, env map[string]string, _ *zap.Logger, options ...staticPool.Options) (*staticPool.Pool, error)
 	NewWorker(ctx context.Context, env map[string]string) (*worker.Process, error)
 }
 
