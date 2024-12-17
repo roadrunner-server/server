@@ -6,7 +6,7 @@ toolchain go1.23.4
 
 require (
 	github.com/roadrunner-server/errors v1.4.1
-	github.com/roadrunner-server/pool v1.1.1
+	github.com/roadrunner-server/pool v1.1.2
 	github.com/roadrunner-server/tcplisten v1.5.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
