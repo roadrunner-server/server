@@ -5,15 +5,15 @@ go 1.23
 toolchain go1.23.4
 
 require (
-	github.com/roadrunner-server/config/v5 v5.1.1
+	github.com/roadrunner-server/config/v5 v5.1.2
 	github.com/roadrunner-server/endure/v2 v2.6.1
 	github.com/roadrunner-server/errors v1.4.1
-	github.com/roadrunner-server/http/v5 v5.2.0
-	github.com/roadrunner-server/logger/v5 v5.1.1
-	github.com/roadrunner-server/metrics/v5 v5.1.1
+	github.com/roadrunner-server/http/v5 v5.2.1
+	github.com/roadrunner-server/logger/v5 v5.1.2
+	github.com/roadrunner-server/metrics/v5 v5.1.2
 	github.com/roadrunner-server/pool v1.1.2
-	github.com/roadrunner-server/prometheus/v5 v5.1.1
-	github.com/roadrunner-server/rpc/v5 v5.1.1
+	github.com/roadrunner-server/prometheus/v5 v5.1.2
+	github.com/roadrunner-server/rpc/v5 v5.1.2
 	github.com/roadrunner-server/server/v5 v5.0.0
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.27.0
@@ -55,7 +55,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_golang v1.20.5 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
-	github.com/prometheus/common v0.61.0 // indirect
+	github.com/prometheus/common v0.62.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/quic-go/qpack v0.5.1 // indirect
 	github.com/quic-go/quic-go v0.48.2 // indirect
