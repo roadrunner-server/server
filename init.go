@@ -63,6 +63,10 @@ func (b *command) start() error {
 			return err
 		}
 
+		if b.cfg.ExitOnError {
+			return errors.Str("startup process has been killed by timeout")
+		}
+
 		return nil
 
 	case err := <-stopCh:

@@ -268,6 +268,32 @@ func TestAppTCPOnInitError(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestAppTCPOnInitErrorTimeout(t *testing.T) {
+	cont := endure.New(slog.LevelDebug)
+
+	// config plugin
+	vp := &config.Plugin{
+		Version: "v2024.1.0",
+		Path:    "configs/.rr-on-init-error-timeout.yaml",
+	}
+
+	err := cont.Register(vp)
+	require.NoError(t, err)
+
+	err = cont.RegisterAll(
+		&logger.Plugin{},
+		&server.Plugin{},
+	)
+	require.NoError(t, err)
+
+	err = cont.Init()
+	require.NoError(t, err)
+
+	_, err = cont.Serve()
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "startup process has been killed by timeout")
+}
+
 func TestAppTCPOnInit(t *testing.T) {
 	cont := endure.New(slog.LevelDebug)
 
