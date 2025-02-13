@@ -101,5 +101,5 @@ jobs:
       - name: upload to codecov
         uses: codecov/codecov-action@v5 # Docs: <https://github.com/codecov/codecov-action>
         with:
-          file: ./coverage/summary.txt
+          files: ./coverage/summary.txt
           fail_ci_if_error: false
