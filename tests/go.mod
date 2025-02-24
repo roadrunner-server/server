@@ -12,8 +12,8 @@ require (
 	github.com/roadrunner-server/logger/v5 v5.1.5
 	github.com/roadrunner-server/metrics/v5 v5.1.4
 	github.com/roadrunner-server/pool v1.1.3
-	github.com/roadrunner-server/prometheus/v5 v5.1.4
-	github.com/roadrunner-server/rpc/v5 v5.1.4
+	github.com/roadrunner-server/prometheus/v5 v5.1.5
+	github.com/roadrunner-server/rpc/v5 v5.1.5
 	github.com/roadrunner-server/server/v5 v5.0.0
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.27.0
