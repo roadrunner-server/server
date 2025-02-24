@@ -10,7 +10,7 @@ require (
 	github.com/roadrunner-server/errors v1.4.1
 	github.com/roadrunner-server/http/v5 v5.2.4
 	github.com/roadrunner-server/logger/v5 v5.1.5
-	github.com/roadrunner-server/metrics/v5 v5.1.4
+	github.com/roadrunner-server/metrics/v5 v5.1.5
 	github.com/roadrunner-server/pool v1.1.3
 	github.com/roadrunner-server/prometheus/v5 v5.1.5
 	github.com/roadrunner-server/rpc/v5 v5.1.5
@@ -89,7 +89,7 @@ require (
 	go.uber.org/mock v0.5.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap/exp v0.3.0 // indirect
-	golang.org/x/crypto v0.34.0 // indirect
+	golang.org/x/crypto v0.35.0 // indirect
 	golang.org/x/exp v0.0.0-20250218142911-aa4b98e5adaa // indirect
 	golang.org/x/mod v0.23.0 // indirect
 	golang.org/x/net v0.35.0 // indirect
