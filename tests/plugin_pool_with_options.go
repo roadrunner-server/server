@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+
 	staticPool "github.com/roadrunner-server/pool/pool/static_pool"
 
 	"github.com/roadrunner-server/errors"
