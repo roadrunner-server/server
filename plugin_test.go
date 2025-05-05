@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"slices"
+
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
@@ -160,10 +162,8 @@ func TestEnv(t *testing.T) {
 	err = p.Init(cfg, NewTestLogger(log))
 	require.NoError(t, err)
 
-	for i := range p.preparedEnvs {
-		if p.preparedEnvs[i] == `ENV=DATABASE_URL: "mysql://foo:foo1@foo2:foo3/foo4?serverVersion=5.7` { //nolint:gosec
-			return
-		}
+	if slices.Contains(p.preparedEnvs, `ENV=DATABASE_URL: "mysql://foo:foo1@foo2:foo3/foo4?serverVersion=5.7`) {
+		return
 	}
 
 	t.Fatal("DATABASE_ENV not found")
@@ -201,10 +201,8 @@ func TestEnv2(t *testing.T) {
 	err = p.Init(cfg, NewTestLogger(log))
 	require.NoError(t, err)
 
-	for i := range p.preparedEnvs {
-		if p.preparedEnvs[i] == `ENV=DATABASE_URL: "mysql://foo:foo1@foo2:foo3/foo4?serverVersion=5.7` { //nolint:gosec
-			return
-		}
+	if slices.Contains(p.preparedEnvs, `ENV=DATABASE_URL: "mysql://foo:foo1@foo2:foo3/foo4?serverVersion=5.7`) {
+		return
 	}
 
 	t.Fatal("DATABASE_ENV not found")
@@ -242,10 +240,8 @@ func TestEnv3(t *testing.T) {
 	err = p.Init(cfg, NewTestLogger(log))
 	require.NoError(t, err)
 
-	for i := range p.preparedEnvs {
-		if p.preparedEnvs[i] == `ENV=DATABASE_URL: "mysql://:foo1@foo2:foo3/foo4?serverVersion=5.7` {
-			return
-		}
+	if slices.Contains(p.preparedEnvs, `ENV=DATABASE_URL: "mysql://:foo1@foo2:foo3/foo4?serverVersion=5.7`) {
+		return
 	}
 
 	t.Fatal("DATABASE_ENV not found")
@@ -272,10 +268,8 @@ func TestEnv4(t *testing.T) {
 	err = p.Init(cfg, NewTestLogger(log))
 	require.NoError(t, err)
 
-	for i := range p.preparedEnvs {
-		if p.preparedEnvs[i] == `ENV=FOO: "` {
-			return
-		}
+	if slices.Contains(p.preparedEnvs, `ENV=FOO: "`) {
+		return
 	}
 
 	t.Fatal("FOO not found")
