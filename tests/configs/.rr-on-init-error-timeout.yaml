@@ -1,0 +1,14 @@
+version: '3'
+
+server:
+  # Test configuration: Forces a timeout by setting 1ns timeout for a 1s sleep
+  on_init:
+    command: "sleep 1"
+    exec_timeout: 1ns
+    exit_on_error: true
+
+  command: "php php_test_files/loop.php"
+
+logs:
+  mode: development
+  level: debug

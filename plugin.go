@@ -110,6 +110,11 @@ func (p *Plugin) Serve() chan error {
 		err := newCommand(p.log, p.appLog, p.cfg.OnInit).start()
 		if err != nil {
 			p.log.Error("on_init was finished with errors", zap.Error(err))
+			// if exit_on_error is set, we should return error and stop the server
+			if p.cfg.OnInit.ExitOnError {
+				errCh <- err
+				return errCh
+			}
 		}
 	}
 
@@ -144,6 +149,18 @@ func (p *Plugin) NewPool(ctx context.Context, cfg *pool.Config, env map[string]s
 	defer p.mu.Unlock()
 
 	pl, err := staticPool.NewPool(ctx, pool.Command(p.customCmd(env)), p.factory, cfg, p.log, staticPool.WithQueueSize(cfg.MaxQueueSize))
+	if err != nil {
+		return nil, err
+	}
+
+	return pl, nil
+}
+
+func (p *Plugin) NewPoolWithOptions(ctx context.Context, cfg *pool.Config, env map[string]string, _ *zap.Logger, options ...staticPool.Options) (*staticPool.Pool, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	pl, err := staticPool.NewPool(ctx, pool.Command(p.customCmd(env)), p.factory, cfg, p.log, options...)
 	if err != nil {
 		return nil, err
 	}

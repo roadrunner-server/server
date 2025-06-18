@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"slices"
+
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
@@ -20,19 +22,19 @@ func InitMockCfg(v *viper.Viper) (*Cfg, error) {
 	}, nil
 }
 
-func (c *Cfg) UnmarshalKey(name string, out interface{}) error {
+func (c *Cfg) UnmarshalKey(name string, out any) error {
 	return c.v.UnmarshalKey(name, out)
 }
 
-func (c *Cfg) Unmarshal(_ interface{}) error {
+func (c *Cfg) Unmarshal(_ any) error {
 	return nil
 }
 
-func (c *Cfg) Get(_ string) interface{} {
+func (c *Cfg) Get(_ string) any {
 	return nil
 }
 
-func (c *Cfg) Overwrite(_ map[string]interface{}) error {
+func (c *Cfg) Overwrite(_ map[string]any) error {
 	return nil
 }
 
@@ -150,7 +152,7 @@ func TestEnv(t *testing.T) {
 	v := viper.New()
 	v.Set("server.command", "php php_test_files/client.php echo pipes")
 
-	m := make(map[string]interface{})
+	m := make(map[string]any)
 	m["env"] = `DATABASE_URL: "mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?serverVersion=5.7`
 
 	v.Set("server.env", m)
@@ -160,10 +162,8 @@ func TestEnv(t *testing.T) {
 	err = p.Init(cfg, NewTestLogger(log))
 	require.NoError(t, err)
 
-	for i := 0; i < len(p.preparedEnvs); i++ {
-		if p.preparedEnvs[i] == `ENV=DATABASE_URL: "mysql://foo:foo1@foo2:foo3/foo4?serverVersion=5.7` { //nolint:gosec
-			return
-		}
+	if slices.Contains(p.preparedEnvs, `ENV=DATABASE_URL: "mysql://foo:foo1@foo2:foo3/foo4?serverVersion=5.7`) {
+		return
 	}
 
 	t.Fatal("DATABASE_ENV not found")
@@ -191,7 +191,7 @@ func TestEnv2(t *testing.T) {
 	v := viper.New()
 	v.Set("server.command", "php php_test_files/client.php echo pipes")
 
-	m := make(map[string]interface{})
+	m := make(map[string]any)
 	m["env"] = `DATABASE_URL: "mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST:$MYSQL_PORT/$MYSQL_DATABASE?serverVersion=5.7`
 
 	v.Set("server.env", m)
@@ -201,10 +201,8 @@ func TestEnv2(t *testing.T) {
 	err = p.Init(cfg, NewTestLogger(log))
 	require.NoError(t, err)
 
-	for i := 0; i < len(p.preparedEnvs); i++ {
-		if p.preparedEnvs[i] == `ENV=DATABASE_URL: "mysql://foo:foo1@foo2:foo3/foo4?serverVersion=5.7` { //nolint:gosec
-			return
-		}
+	if slices.Contains(p.preparedEnvs, `ENV=DATABASE_URL: "mysql://foo:foo1@foo2:foo3/foo4?serverVersion=5.7`) {
+		return
 	}
 
 	t.Fatal("DATABASE_ENV not found")
@@ -232,7 +230,7 @@ func TestEnv3(t *testing.T) {
 	v := viper.New()
 	v.Set("server.command", "php php_test_files/client.php echo pipes")
 
-	m := make(map[string]interface{})
+	m := make(map[string]any)
 	m["env"] = `DATABASE_URL: "mysql://$MYSQL_USE:$MYSQL_PASSWORD@$MYSQL_HOST:$MYSQL_PORT/$MYSQL_DATABASE?serverVersion=5.7`
 
 	v.Set("server.env", m)
@@ -242,10 +240,8 @@ func TestEnv3(t *testing.T) {
 	err = p.Init(cfg, NewTestLogger(log))
 	require.NoError(t, err)
 
-	for i := 0; i < len(p.preparedEnvs); i++ {
-		if p.preparedEnvs[i] == `ENV=DATABASE_URL: "mysql://:foo1@foo2:foo3/foo4?serverVersion=5.7` {
-			return
-		}
+	if slices.Contains(p.preparedEnvs, `ENV=DATABASE_URL: "mysql://:foo1@foo2:foo3/foo4?serverVersion=5.7`) {
+		return
 	}
 
 	t.Fatal("DATABASE_ENV not found")
@@ -262,7 +258,7 @@ func TestEnv4(t *testing.T) {
 	v := viper.New()
 	v.Set("server.command", "php php_test_files/client.php echo pipes")
 
-	m := make(map[string]interface{})
+	m := make(map[string]any)
 	m["env"] = `FOO: "$FOO_BAR`
 
 	v.Set("server.env", m)
@@ -272,10 +268,8 @@ func TestEnv4(t *testing.T) {
 	err = p.Init(cfg, NewTestLogger(log))
 	require.NoError(t, err)
 
-	for i := 0; i < len(p.preparedEnvs); i++ {
-		if p.preparedEnvs[i] == `ENV=FOO: "` {
-			return
-		}
+	if slices.Contains(p.preparedEnvs, `ENV=FOO: "`) {
+		return
 	}
 
 	t.Fatal("FOO not found")

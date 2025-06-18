@@ -243,6 +243,57 @@ func TestAppPipesException(t *testing.T) {
 	_ = container.Stop()
 }
 
+func TestAppTCPOnInitError(t *testing.T) {
+	cont := endure.New(slog.LevelDebug)
+
+	// config plugin
+	vp := &config.Plugin{
+		Version: "v2024.1.0",
+		Path:    "configs/.rr-on-init-error.yaml",
+	}
+
+	err := cont.Register(vp)
+	require.NoError(t, err)
+
+	err = cont.RegisterAll(
+		&logger.Plugin{},
+		&server.Plugin{},
+	)
+	require.NoError(t, err)
+
+	err = cont.Init()
+	require.NoError(t, err)
+
+	_, err = cont.Serve()
+	require.Error(t, err)
+}
+
+func TestAppTCPOnInitErrorTimeout(t *testing.T) {
+	cont := endure.New(slog.LevelDebug)
+
+	// config plugin
+	vp := &config.Plugin{
+		Version: "v2024.1.0",
+		Path:    "configs/.rr-on-init-error-timeout.yaml",
+	}
+
+	err := cont.Register(vp)
+	require.NoError(t, err)
+
+	err = cont.RegisterAll(
+		&logger.Plugin{},
+		&server.Plugin{},
+	)
+	require.NoError(t, err)
+
+	err = cont.Init()
+	require.NoError(t, err)
+
+	_, err = cont.Serve()
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "startup process has been killed by timeout")
+}
+
 func TestAppTCPOnInit(t *testing.T) {
 	cont := endure.New(slog.LevelDebug)
 
@@ -660,6 +711,65 @@ func TestOnInitMetrics(t *testing.T) {
 		&metrics.Plugin{},
 		&prometheus.Plugin{},
 		&rpcPlugin.Plugin{},
+		&logger.Plugin{},
+	)
+	require.NoError(t, err)
+
+	err = cont.Init()
+	require.NoError(t, err)
+
+	ch, err := cont.Serve()
+	require.NoError(t, err)
+
+	// stop by CTRL+C
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+
+	stopCh := make(chan struct{}, 1)
+
+	go func() {
+		defer wg.Done()
+		for {
+			select {
+			case e := <-ch:
+				assert.Fail(t, "error", e.Error.Error())
+			case <-sig:
+				err = cont.Stop()
+				if err != nil {
+					assert.FailNow(t, "error", err.Error())
+				}
+				return
+			case <-stopCh:
+				// timeout
+				err = cont.Stop()
+				if err != nil {
+					assert.FailNow(t, "error", err.Error())
+				}
+				return
+			}
+		}
+	}()
+
+	stopCh <- struct{}{}
+	wg.Wait()
+}
+
+func TestNewPoolWithOptions(t *testing.T) {
+	cont := endure.New(slog.LevelDebug)
+
+	// config plugin
+	vp := &config.Plugin{
+		Version: "v2024.1.0",
+		Path:    "configs/.rr-tcp.yaml",
+	}
+
+	err := cont.RegisterAll(
+		vp,
+		&server.Plugin{},
+		&Foo5{},
 		&logger.Plugin{},
 	)
 	require.NoError(t, err)
