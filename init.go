@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -86,22 +87,26 @@ func (b *command) createProcess(env map[string]string, cmd []string) *exec.Cmd {
 	var cmdArgs []string
 	var execCmd *exec.Cmd
 
-	// here we may have 2 cases: command declared as a space separated string or as a slice
+	// TODO!: better way to handle commands, we should not use strings.Split based on space
+	// here we may have 2 cases: command declared as a space-separated string or as a slice
 	switch len(cmd) {
-	// command defined as a space separated string
+	// command defined as a space-separated string
 	case 1:
 		// we know that the len is 1, so we can safely use the first element
 		cmdArgs = append(cmdArgs, strings.Split(cmd[0], " ")...)
 	default:
-		// we have a slice with a 2 or more elements
+		// we have a slice with 2 or more elements
 		// first element is the command, the rest are arguments
 		cmdArgs = cmd
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	if len(cmdArgs) == 1 {
-		execCmd = exec.Command(cmd[0])
+		execCmd = exec.CommandContext(ctx, cmd[0])
 	} else {
-		execCmd = exec.Command(cmdArgs[0], cmdArgs[1:]...)
+		execCmd = exec.CommandContext(ctx, cmdArgs[0], cmdArgs[1:]...)
 	}
 
 	// set env variables from the config
