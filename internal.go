@@ -26,7 +26,7 @@ func (p *Plugin) cmdFactory(env map[string]string) internalCommand {
 	return func() *exec.Cmd {
 		var cmd *exec.Cmd
 
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
 		if len(p.preparedCmd) == 1 {
@@ -83,7 +83,7 @@ func (p *Plugin) customCmd(env map[string]string) internalCmdWithArgs {
 			preparedCmd = command
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
 		if len(preparedCmd) == 1 {
