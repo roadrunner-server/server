@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -100,9 +101,9 @@ func (b *command) createProcess(env map[string]string, cmd []string) *exec.Cmd {
 	}
 
 	if len(cmdArgs) == 1 {
-		execCmd = exec.Command(cmd[0])
+		execCmd = exec.CommandContext(context.Background(), cmd[0])
 	} else {
-		execCmd = exec.Command(cmdArgs[0], cmdArgs[1:]...)
+		execCmd = exec.CommandContext(context.Background(), cmdArgs[0], cmdArgs[1:]...)
 	}
 
 	// set env variables from the config

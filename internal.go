@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -25,9 +26,9 @@ func (p *Plugin) cmdFactory(env map[string]string) internalCommand {
 		var cmd *exec.Cmd
 
 		if len(p.preparedCmd) == 1 {
-			cmd = exec.Command(p.preparedCmd[0])
+			cmd = exec.CommandContext(context.Background(), p.preparedCmd[0])
 		} else {
-			cmd = exec.Command(p.preparedCmd[0], p.preparedCmd[1:]...)
+			cmd = exec.CommandContext(context.Background(), p.preparedCmd[0], p.preparedCmd[1:]...)
 		}
 
 		// copy prepared envs
@@ -79,9 +80,9 @@ func (p *Plugin) customCmd(env map[string]string) internalCmdWithArgs {
 		}
 
 		if len(preparedCmd) == 1 {
-			cmd = exec.Command(preparedCmd[0])
+			cmd = exec.CommandContext(context.Background(), preparedCmd[0])
 		} else {
-			cmd = exec.Command(preparedCmd[0], preparedCmd[1:]...)
+			cmd = exec.CommandContext(context.Background(), preparedCmd[0], preparedCmd[1:]...)
 		}
 
 		// copy prepared envs
