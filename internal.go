@@ -1,11 +1,9 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"os/exec"
 	"strings"
-	"time"
 
 	"github.com/roadrunner-server/errors"
 	"github.com/roadrunner-server/pool/ipc/pipe"
@@ -26,13 +24,10 @@ func (p *Plugin) cmdFactory(env map[string]string) internalCommand {
 	return func() *exec.Cmd {
 		var cmd *exec.Cmd
 
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
-
 		if len(p.preparedCmd) == 1 {
-			cmd = exec.CommandContext(ctx, p.preparedCmd[0])
+			cmd = exec.Command(p.preparedCmd[0])
 		} else {
-			cmd = exec.CommandContext(ctx, p.preparedCmd[0], p.preparedCmd[1:]...)
+			cmd = exec.Command(p.preparedCmd[0], p.preparedCmd[1:]...)
 		}
 
 		// copy prepared envs
@@ -83,13 +78,10 @@ func (p *Plugin) customCmd(env map[string]string) internalCmdWithArgs {
 			preparedCmd = command
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
-
 		if len(preparedCmd) == 1 {
-			cmd = exec.CommandContext(ctx, preparedCmd[0])
+			cmd = exec.Command(preparedCmd[0])
 		} else {
-			cmd = exec.CommandContext(ctx, preparedCmd[0], preparedCmd[1:]...)
+			cmd = exec.Command(preparedCmd[0], preparedCmd[1:]...)
 		}
 
 		// copy prepared envs
