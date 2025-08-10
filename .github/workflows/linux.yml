@@ -93,7 +93,6 @@ jobs:
       - name: Download code coverage results
         uses: actions/download-artifact@v5
       - run: |
-          cd coverage
           echo 'mode: atomic' > summary.txt
           tail -q -n +2 *.out >> summary.txt
           sed -i '2,${/roadrunner/!d}' summary.txt
