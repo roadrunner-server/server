@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dd8ab381de7afafb2d8c15edeb4bb88b",
+    "content-hash": "cea33a545a79e862791886ada6b3b570",
     "packages": [
         {
             "name": "brick/math",
@@ -2389,16 +2389,16 @@
         },
         {
             "name": "spiral/roadrunner",
-            "version": "v2023.3.12",
+            "version": "v2025.1.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/roadrunner-server/roadrunner.git",
-                "reference": "9b5b65e00c6de7327142a8d689646f950fe00788"
+                "reference": "ff25363b72dd6ab2bd642d741db13b30d52d254f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/roadrunner-server/roadrunner/zipball/9b5b65e00c6de7327142a8d689646f950fe00788",
-                "reference": "9b5b65e00c6de7327142a8d689646f950fe00788",
+                "url": "https://api.github.com/repos/roadrunner-server/roadrunner/zipball/ff25363b72dd6ab2bd642d741db13b30d52d254f",
+                "reference": "ff25363b72dd6ab2bd642d741db13b30d52d254f",
                 "shasum": ""
             },
             "type": "metapackage",
@@ -2427,7 +2427,7 @@
                 "docs": "https://roadrunner.dev/docs",
                 "forum": "https://forum.roadrunner.dev/",
                 "issues": "https://github.com/roadrunner-server/roadrunner/issues",
-                "source": "https://github.com/roadrunner-server/roadrunner/tree/v2023.3.12"
+                "source": "https://github.com/roadrunner-server/roadrunner/tree/v2025.1.4"
             },
             "funding": [
                 {
@@ -2435,20 +2435,20 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-02-29T18:16:45+00:00"
+            "time": "2025-10-02T16:43:06+00:00"
         },
         {
             "name": "spiral/roadrunner-grpc",
-            "version": "v3.4.3",
+            "version": "v3.5.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/roadrunner-php/grpc.git",
-                "reference": "bc04ee6b805b812d272e6bd18e60022f9ba09eae"
+                "reference": "916c061de160d6b2f3efc82dcffac0360d84fab8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/roadrunner-php/grpc/zipball/bc04ee6b805b812d272e6bd18e60022f9ba09eae",
-                "reference": "bc04ee6b805b812d272e6bd18e60022f9ba09eae",
+                "url": "https://api.github.com/repos/roadrunner-php/grpc/zipball/916c061de160d6b2f3efc82dcffac0360d84fab8",
+                "reference": "916c061de160d6b2f3efc82dcffac0360d84fab8",
                 "shasum": ""
             },
             "require": {
@@ -2457,8 +2457,9 @@
                 "google/protobuf": "^3.7 || ^4.0",
                 "php": ">=8.1",
                 "spiral/goridge": "^4.0",
-                "spiral/roadrunner": "^2023.1 || ^2024.1",
-                "spiral/roadrunner-worker": "^3.0"
+                "spiral/roadrunner": "^2024.3 || ^2025.1",
+                "spiral/roadrunner-worker": "^3.0",
+                "symfony/polyfill-php83": "*"
             },
             "require-dev": {
                 "jetbrains/phpstorm-attributes": "^1.0",
@@ -2507,7 +2508,7 @@
                 "docs": "https://docs.roadrunner.dev",
                 "forum": "https://forum.roadrunner.dev/",
                 "issues": "https://github.com/roadrunner-server/roadrunner/issues",
-                "source": "https://github.com/roadrunner-php/grpc/tree/v3.4.3"
+                "source": "https://github.com/roadrunner-php/grpc/tree/v3.5.2"
             },
             "funding": [
                 {
@@ -2515,7 +2516,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-01-09T20:08:20+00:00"
+            "time": "2025-05-18T13:54:33+00:00"
         },
         {
             "name": "spiral/roadrunner-http",
@@ -2609,16 +2610,16 @@
         },
         {
             "name": "spiral/roadrunner-jobs",
-            "version": "v4.6.2",
+            "version": "v4.6.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/roadrunner-php/jobs.git",
-                "reference": "52ae1fb934604cd81b69a91cdf764f9c2b9b5fa7"
+                "reference": "20cfcd551f106de11c9cc7d0b167dc6b8832dc4e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/roadrunner-php/jobs/zipball/52ae1fb934604cd81b69a91cdf764f9c2b9b5fa7",
-                "reference": "52ae1fb934604cd81b69a91cdf764f9c2b9b5fa7",
+                "url": "https://api.github.com/repos/roadrunner-php/jobs/zipball/20cfcd551f106de11c9cc7d0b167dc6b8832dc4e",
+                "reference": "20cfcd551f106de11c9cc7d0b167dc6b8832dc4e",
                 "shasum": ""
             },
             "require": {
@@ -2627,7 +2628,7 @@
                 "ramsey/uuid": "^3 || ^4",
                 "roadrunner-php/roadrunner-api-dto": "^1.0",
                 "spiral/goridge": "^4.0",
-                "spiral/roadrunner": "^2023.1 || ^2024.1",
+                "spiral/roadrunner": "^2024.2 || ^2025.1",
                 "spiral/roadrunner-worker": "^3.0"
             },
             "require-dev": {
@@ -2679,7 +2680,7 @@
                 "docs": "https://docs.roadrunner.dev",
                 "forum": "https://forum.roadrunner.dev/",
                 "issues": "https://github.com/roadrunner-server/roadrunner/issues",
-                "source": "https://github.com/roadrunner-php/jobs/tree/v4.6.2"
+                "source": "https://github.com/roadrunner-php/jobs/tree/v4.6.3"
             },
             "funding": [
                 {
@@ -2687,7 +2688,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-11-30T15:38:28+00:00"
+            "time": "2025-05-27T08:35:56+00:00"
         },
         {
             "name": "spiral/roadrunner-kv",
@@ -2927,22 +2928,22 @@
         },
         {
             "name": "spiral/roadrunner-tcp",
-            "version": "v3.1.0",
+            "version": "v4.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/roadrunner-php/tcp.git",
-                "reference": "2fc2fa71aa960a45880cc88c1baffc7f94a3d0af"
+                "reference": "b00582d3485577e4919a33cad02e70e1429b5408"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/roadrunner-php/tcp/zipball/2fc2fa71aa960a45880cc88c1baffc7f94a3d0af",
-                "reference": "2fc2fa71aa960a45880cc88c1baffc7f94a3d0af",
+                "url": "https://api.github.com/repos/roadrunner-php/tcp/zipball/b00582d3485577e4919a33cad02e70e1429b5408",
+                "reference": "b00582d3485577e4919a33cad02e70e1429b5408",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "php": ">=8.1",
-                "spiral/roadrunner": "^2023.1",
+                "spiral/roadrunner": "^2023.1 || ^2024.1 || ^2025.1",
                 "spiral/roadrunner-worker": "^3.0"
             },
             "require-dev": {
@@ -2992,7 +2993,7 @@
                 "docs": "https://docs.roadrunner.dev",
                 "forum": "https://forum.roadrunner.dev/",
                 "issues": "https://github.com/roadrunner-server/roadrunner/issues",
-                "source": "https://github.com/roadrunner-php/tcp/tree/v3.1.0"
+                "source": "https://github.com/roadrunner-php/tcp/tree/v4.1.1"
             },
             "funding": [
                 {
@@ -3000,7 +3001,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-02-29T10:38:30+00:00"
+            "time": "2025-06-23T08:28:39+00:00"
         },
         {
             "name": "spiral/roadrunner-worker",
