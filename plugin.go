@@ -26,9 +26,14 @@ type Plugin struct {
 	preparedCmd  []string
 	preparedEnvs []string
 
-	log     *zap.Logger
+	appLog *zap.Logger
+	log    *zap.Logger
+
 	factory pool.Factory
 }
+
+// AppLoggerChannel Always could depend to roadrunner-server/app-logger?
+const AppLoggerChannel = "app"
 
 // Init application provider.
 func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
@@ -52,8 +57,11 @@ func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 		return errors.E(op, errors.Init, err)
 	}
 
-	p.log = new(zap.Logger)
 	p.log = log.NamedLogger(PluginName)
+
+	// We always have "app" channel because we are Application Server :)
+	// By separating the channels, we will be able to flexibly configure the Server logs and the App logs separately.
+	p.appLog = log.NamedLogger(AppLoggerChannel)
 
 	// here we may have 2 cases: command declared as a space-separated string or as a slice
 	switch len(p.cfg.Command) {
@@ -99,7 +107,7 @@ func (p *Plugin) Serve() chan error {
 	errCh := make(chan error, 1)
 
 	if p.cfg.OnInit != nil {
-		err := newCommand(p.log, p.cfg.OnInit).start()
+		err := newCommand(p.log, p.appLog, p.cfg.OnInit).start()
 		if err != nil {
 			p.log.Error("on_init was finished with errors", zap.Error(err))
 			// if exit_on_error is set, we should return error and stop the server
