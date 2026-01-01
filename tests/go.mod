@@ -54,7 +54,7 @@ require (
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.58.0 // indirect
 	github.com/roadrunner-server/api/v4 v4.23.0 // indirect
-	github.com/roadrunner-server/context v1.1.0 // indirect
+	github.com/roadrunner-server/context v1.2.0 // indirect
 	github.com/roadrunner-server/events v1.0.1 // indirect
 	github.com/roadrunner-server/goridge/v3 v3.8.3 // indirect
 	github.com/roadrunner-server/tcplisten v1.5.2 // indirect
