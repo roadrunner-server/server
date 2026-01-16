@@ -2,7 +2,7 @@ module github.com/roadrunner-server/server/v5
 
 go 1.25
 
-toolchain go1.25.5
+toolchain go1.25.6
 
 require (
 	github.com/roadrunner-server/errors v1.4.1
