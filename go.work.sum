@@ -1216,6 +1216,8 @@ github.com/prometheus/procfs v0.0.8/go.mod h1:7Qr8sr6344vo1JqZ6HhLceV9o3AJ1Ff+Gx
 github.com/quic-go/qtls-go1-20 v0.4.1/go.mod h1:X9Nh97ZL80Z+bX/gUXMbipO6OxdiDi58b/fMC9mAL+k=
 github.com/roadrunner-server/http/v5 v5.2.8 h1:cXUKHxUGlfEa4MlABUno3w6exok+RDkybSR065kGwUE=
 github.com/roadrunner-server/http/v5 v5.2.8/go.mod h1:5XopTtiPMbF03zEDkdd+mM3KRtgsbZ8o5uHMRS8hx98=
+github.com/roadrunner-server/metrics/v5 v5.2.0 h1:54MWLO9t0tgx2It3sEx/Zz7rFwpYk6g9rjvApFBXTUQ=
+github.com/roadrunner-server/metrics/v5 v5.2.0/go.mod h1:GRr9V0zI2XY9CmoCwW3wyUcFSQq98Lm0ENp77jYgzF0=
 github.com/roadrunner-server/pool v1.1.0 h1:65MmexdO+Xhm1tXAhLXLVzagb8AIDDqBVEi9VET0lyQ=
 github.com/roadrunner-server/pool v1.1.0/go.mod h1:x3wyyniz3CAP4jtu0CrJYTmbLyf6TVO2Xi4xMkNOjkA=
 github.com/roadrunner-server/rpc/v4 v4.2.11 h1:TGxiiglEHdsH2+WLkZqGaD3duXEsNwGlNr5/AheJh6s=
