@@ -21,7 +21,7 @@ import (
 	"github.com/roadrunner-server/metrics/v5"
 	"github.com/roadrunner-server/prometheus/v5"
 	rpcPlugin "github.com/roadrunner-server/rpc/v5"
-	"github.com/roadrunner-server/server/v5"
+	"github.com/roadrunner-server/server/v6"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"

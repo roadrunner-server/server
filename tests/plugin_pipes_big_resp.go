@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/roadrunner-server/pool/payload"
-	poolImpl "github.com/roadrunner-server/pool/pool"
-	serverImpl "github.com/roadrunner-server/server/v5"
+	"github.com/roadrunner-server/pool/v2/payload"
+	poolImpl "github.com/roadrunner-server/pool/v2/pool"
+	serverImpl "github.com/roadrunner-server/server/v6"
 	"go.uber.org/zap"
 )
 

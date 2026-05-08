@@ -3,11 +3,11 @@ package tests
 import (
 	"context"
 
-	staticPool "github.com/roadrunner-server/pool/pool/static_pool"
+	staticPool "github.com/roadrunner-server/pool/v2/pool/static_pool"
 
 	"github.com/roadrunner-server/errors"
-	"github.com/roadrunner-server/pool/payload"
-	serverImpl "github.com/roadrunner-server/server/v5"
+	"github.com/roadrunner-server/pool/v2/payload"
+	serverImpl "github.com/roadrunner-server/server/v6"
 )
 
 type Foo5 struct {

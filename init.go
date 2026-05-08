@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/roadrunner-server/errors"
-	"github.com/roadrunner-server/pool/process"
+	"github.com/roadrunner-server/pool/v2/process"
 	"go.uber.org/zap"
 )
 

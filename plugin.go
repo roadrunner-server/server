@@ -12,9 +12,9 @@ import (
 	"github.com/roadrunner-server/errors"
 	"go.uber.org/zap"
 
-	"github.com/roadrunner-server/pool/pool"
-	staticPool "github.com/roadrunner-server/pool/pool/static_pool"
-	"github.com/roadrunner-server/pool/worker"
+	"github.com/roadrunner-server/pool/v2/pool"
+	staticPool "github.com/roadrunner-server/pool/v2/pool/static_pool"
+	"github.com/roadrunner-server/pool/v2/worker"
 )
 
 // Plugin manages worker
@@ -140,7 +140,7 @@ func (p *Plugin) NewPool(ctx context.Context, cfg *pool.Config, env map[string]s
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	pl, err := staticPool.NewPool(ctx, pool.Command(p.customCmd(env)), p.factory, cfg, p.log, staticPool.WithQueueSize(cfg.MaxQueueSize))
+	pl, err := staticPool.NewPool(ctx, pool.Command(p.customCmd(env)), p.factory, cfg, zapToSlog(p.log), staticPool.WithQueueSize(cfg.MaxQueueSize))
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +152,7 @@ func (p *Plugin) NewPoolWithOptions(ctx context.Context, cfg *pool.Config, env m
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	pl, err := staticPool.NewPool(ctx, pool.Command(p.customCmd(env)), p.factory, cfg, p.log, options...)
+	pl, err := staticPool.NewPool(ctx, pool.Command(p.customCmd(env)), p.factory, cfg, zapToSlog(p.log), options...)
 	if err != nil {
 		return nil, err
 	}

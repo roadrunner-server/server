@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/roadrunner-server/errors"
-	"github.com/roadrunner-server/pool/payload"
-	serverImpl "github.com/roadrunner-server/server/v5"
+	"github.com/roadrunner-server/pool/v2/payload"
+	serverImpl "github.com/roadrunner-server/server/v6"
 )
 
 type Foo3 struct {
