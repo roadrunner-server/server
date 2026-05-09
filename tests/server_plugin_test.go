@@ -12,8 +12,6 @@ import (
 	"testing"
 	"time"
 
-	mockLogger "tests/mock"
-
 	"github.com/roadrunner-server/config/v5"
 	"github.com/roadrunner-server/endure/v2"
 	httpPlugin "github.com/roadrunner-server/http/v5"
@@ -24,7 +22,7 @@ import (
 	"github.com/roadrunner-server/server/v6"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
+	mockLogger "tests/mock"
 )
 
 func TestAppPipes(t *testing.T) {
@@ -306,7 +304,7 @@ func TestAppTCPOnInit(t *testing.T) {
 	err := cont.Register(vp)
 	require.NoError(t, err)
 
-	l, oLogger := mockLogger.ZapTestLogger(zap.DebugLevel)
+	l, oLogger := mockLogger.ZapTestLogger(slog.LevelDebug)
 	err = cont.RegisterAll(
 		l,
 		&server.Plugin{},
@@ -376,7 +374,7 @@ func TestAppSocketsOnInit(t *testing.T) {
 	err := cont.Register(vp)
 	require.NoError(t, err)
 
-	l, oLogger := mockLogger.ZapTestLogger(zap.DebugLevel)
+	l, oLogger := mockLogger.ZapTestLogger(slog.LevelDebug)
 	err = cont.RegisterAll(
 		l,
 		&server.Plugin{},
@@ -446,7 +444,7 @@ func TestAppSocketsOnInitFastClose(t *testing.T) {
 	err := cont.Register(vp)
 	require.NoError(t, err)
 
-	l, oLogger := mockLogger.ZapTestLogger(zap.DebugLevel)
+	l, oLogger := mockLogger.ZapTestLogger(slog.LevelDebug)
 	err = cont.RegisterAll(
 		l,
 		&server.Plugin{},

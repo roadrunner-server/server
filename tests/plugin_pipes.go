@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/roadrunner-server/errors"
@@ -10,7 +11,6 @@ import (
 	staticPool "github.com/roadrunner-server/pool/v2/pool/static_pool"
 	"github.com/roadrunner-server/pool/v2/worker"
 	"github.com/roadrunner-server/server/v6"
-	"go.uber.org/zap"
 )
 
 const ConfigSection = "server"
@@ -25,8 +25,8 @@ type Configurer interface {
 
 // Server creates workers for the application.
 type Server interface {
-	NewPool(ctx context.Context, cfg *pool.Config, env map[string]string, _ *zap.Logger) (*staticPool.Pool, error)
-	NewPoolWithOptions(ctx context.Context, cfg *pool.Config, env map[string]string, _ *zap.Logger, options ...staticPool.Options) (*staticPool.Pool, error)
+	NewPool(ctx context.Context, cfg *pool.Config, env map[string]string, _ *slog.Logger) (*staticPool.Pool, error)
+	NewPoolWithOptions(ctx context.Context, cfg *pool.Config, env map[string]string, _ *slog.Logger, options ...staticPool.Options) (*staticPool.Pool, error)
 	NewWorker(ctx context.Context, env map[string]string) (*worker.Process, error)
 }
 

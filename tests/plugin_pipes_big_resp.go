@@ -2,23 +2,23 @@ package tests
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/roadrunner-server/pool/v2/payload"
 	poolImpl "github.com/roadrunner-server/pool/v2/pool"
 	serverImpl "github.com/roadrunner-server/server/v6"
-	"go.uber.org/zap"
 )
 
 type Logger interface {
-	NamedLogger(string) *zap.Logger
+	NamedLogger(string) *slog.Logger
 }
 
 type Foo4 struct {
 	configProvider Configurer
 	wf             Server
 	pool           Pool
-	log            *zap.Logger
+	log            *slog.Logger
 }
 
 func (f *Foo4) Init(p Configurer, workerFactory Server, log Logger) error {
