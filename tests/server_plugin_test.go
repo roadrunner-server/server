@@ -304,7 +304,7 @@ func TestAppTCPOnInit(t *testing.T) {
 	err := cont.Register(vp)
 	require.NoError(t, err)
 
-	l, oLogger := mockLogger.ZapTestLogger(slog.LevelDebug)
+	l, oLogger := mockLogger.SlogTestLogger(slog.LevelDebug)
 	err = cont.RegisterAll(
 		l,
 		&server.Plugin{},
@@ -374,7 +374,7 @@ func TestAppSocketsOnInit(t *testing.T) {
 	err := cont.Register(vp)
 	require.NoError(t, err)
 
-	l, oLogger := mockLogger.ZapTestLogger(slog.LevelDebug)
+	l, oLogger := mockLogger.SlogTestLogger(slog.LevelDebug)
 	err = cont.RegisterAll(
 		l,
 		&server.Plugin{},
@@ -444,7 +444,7 @@ func TestAppSocketsOnInitFastClose(t *testing.T) {
 	err := cont.Register(vp)
 	require.NoError(t, err)
 
-	l, oLogger := mockLogger.ZapTestLogger(slog.LevelDebug)
+	l, oLogger := mockLogger.SlogTestLogger(slog.LevelDebug)
 	err = cont.RegisterAll(
 		l,
 		&server.Plugin{},
