@@ -1,6 +1,7 @@
 package server
 
 import (
+	"log/slog"
 	"os"
 	"testing"
 	"time"
@@ -9,7 +10,6 @@ import (
 
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 )
 
 type Cfg struct {
@@ -51,22 +51,22 @@ func (c *Cfg) RRVersion() string {
 }
 
 type TestLogger struct {
-	log *zap.Logger
+	log *slog.Logger
 }
 
-func NewTestLogger(log *zap.Logger) *TestLogger {
+func NewTestLogger(log *slog.Logger) *TestLogger {
 	return &TestLogger{
 		log: log,
 	}
 }
 
-func (tl *TestLogger) NamedLogger(string) *zap.Logger {
+func (tl *TestLogger) NamedLogger(string) *slog.Logger {
 	return tl.log
 }
 
 func TestCommandUnknownUser(t *testing.T) {
 	require.Panics(t, func() {
-		log, _ := zap.NewDevelopment()
+		log := slog.New(slog.NewTextHandler(os.Stderr, nil))
 		p := &Plugin{
 			preparedEnvs: make([]string, 0),
 			cfg:          &Config{User: "foo"},
@@ -78,7 +78,7 @@ func TestCommandUnknownUser(t *testing.T) {
 }
 
 func TestCommand1(t *testing.T) {
-	log, _ := zap.NewDevelopment()
+	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	p := &Plugin{
 		preparedEnvs: make([]string, 0),
 		cfg:          &Config{},
@@ -91,7 +91,7 @@ func TestCommand1(t *testing.T) {
 }
 
 func TestCommand2(t *testing.T) {
-	log, _ := zap.NewDevelopment()
+	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	p := &Plugin{
 		preparedEnvs: make([]string, 0),
 		cfg:          &Config{},
@@ -105,7 +105,7 @@ func TestCommand2(t *testing.T) {
 }
 
 func TestCommand3(t *testing.T) {
-	log, _ := zap.NewDevelopment()
+	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	p := &Plugin{
 		preparedEnvs: make([]string, 0),
 		cfg:          &Config{},
@@ -118,7 +118,7 @@ func TestCommand3(t *testing.T) {
 }
 
 func TestCommand4_spaces(t *testing.T) {
-	log, _ := zap.NewDevelopment()
+	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	p := &Plugin{
 		preparedEnvs: make([]string, 0),
 		cfg:          &Config{},
@@ -131,7 +131,7 @@ func TestCommand4_spaces(t *testing.T) {
 }
 
 func TestEnv(t *testing.T) {
-	log, _ := zap.NewDevelopment()
+	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	p := &Plugin{
 		preparedEnvs: make([]string, 0),
 		cfg:          &Config{},
@@ -170,7 +170,7 @@ func TestEnv(t *testing.T) {
 }
 
 func TestEnv2(t *testing.T) {
-	log, _ := zap.NewDevelopment()
+	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	p := &Plugin{
 		preparedEnvs: make([]string, 0),
 		cfg:          &Config{},
@@ -209,7 +209,7 @@ func TestEnv2(t *testing.T) {
 }
 
 func TestEnv3(t *testing.T) {
-	log, _ := zap.NewDevelopment()
+	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	p := &Plugin{
 		preparedEnvs: make([]string, 0),
 		cfg:          &Config{},
@@ -248,7 +248,7 @@ func TestEnv3(t *testing.T) {
 }
 
 func TestEnv4(t *testing.T) {
-	log, _ := zap.NewDevelopment()
+	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	p := &Plugin{
 		preparedEnvs: make([]string, 0),
 		cfg:          &Config{},

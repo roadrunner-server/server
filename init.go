@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"strings"
@@ -10,15 +11,14 @@ import (
 
 	"github.com/roadrunner-server/errors"
 	"github.com/roadrunner-server/pool/v2/process"
-	"go.uber.org/zap"
 )
 
 type command struct {
-	log *zap.Logger
+	log *slog.Logger
 	cfg *InitConfig
 }
 
-func newCommand(log *zap.Logger, cfg *InitConfig) *command {
+func newCommand(log *slog.Logger, cfg *InitConfig) *command {
 	return &command{
 		log: log,
 		cfg: cfg,
@@ -48,7 +48,7 @@ func (b *command) start() error {
 	go func() {
 		errW := cmd.Wait()
 		if errW != nil {
-			b.log.Error("process wait", zap.Error(errW))
+			b.log.Error("process wait", "error", errW)
 			stopCh <- errW
 			return
 		}
@@ -60,7 +60,7 @@ func (b *command) start() error {
 	case <-timer.C:
 		err = cmd.Process.Kill()
 		if err != nil {
-			b.log.Error("process killed", zap.Error(err))
+			b.log.Error("process killed", "error", err)
 			return err
 		}
 

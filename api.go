@@ -2,12 +2,12 @@ package server
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/roadrunner-server/pool/v2/payload"
 	"github.com/roadrunner-server/pool/v2/pool"
 	staticPool "github.com/roadrunner-server/pool/v2/pool/static_pool"
 	"github.com/roadrunner-server/pool/v2/worker"
-	"go.uber.org/zap"
 )
 
 // Pool manager sets of inner worker processes.
@@ -57,5 +57,5 @@ type Configurer interface {
 }
 
 type NamedLogger interface {
-	NamedLogger(name string) *zap.Logger
+	NamedLogger(name string) *slog.Logger
 }

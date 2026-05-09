@@ -13,14 +13,7 @@ import (
 	"github.com/roadrunner-server/pool/v2/pool"
 	"github.com/roadrunner-server/pool/v2/process"
 	"github.com/roadrunner-server/tcplisten"
-	"go.uber.org/zap"
-	"go.uber.org/zap/exp/zapslog"
 )
-
-// zapToSlog adapts a zap.Logger into a *slog.Logger by wrapping its core.
-func zapToSlog(l *zap.Logger) *slog.Logger {
-	return slog.New(zapslog.NewHandler(l.Core()))
-}
 
 type internalCommand func() *exec.Cmd
 
@@ -109,7 +102,7 @@ func (p *Plugin) customCmd(env map[string]string) internalCmdWithArgs {
 		if p.cfg.User != "" {
 			err := process.ExecuteFromUser(cmd, p.cfg.User)
 			if err != nil {
-				p.log.Panic("can't execute command from the user", zap.String("user", p.cfg.User), zap.Error(err))
+				p.log.Error("can't execute command from the user", "user", p.cfg.User, "error", err)
 				return nil
 			}
 		}
@@ -119,11 +112,10 @@ func (p *Plugin) customCmd(env map[string]string) internalCmdWithArgs {
 }
 
 // creates relay and worker factory.
-func initFactory(log *zap.Logger, relay string) (pool.Factory, error) {
+func initFactory(log *slog.Logger, relay string) (pool.Factory, error) {
 	const op = errors.Op("server_plugin_init_factory")
-	slogLog := zapToSlog(log)
 	if relay == "" || relay == pipes {
-		return pipe.NewPipeFactory(slogLog), nil
+		return pipe.NewPipeFactory(log), nil
 	}
 
 	dsn := strings.Split(relay, delim)
@@ -139,9 +131,9 @@ func initFactory(log *zap.Logger, relay string) (pool.Factory, error) {
 	switch dsn[0] {
 	// sockets group
 	case unix:
-		return socket.NewSocketServer(lsn, slogLog), nil
+		return socket.NewSocketServer(lsn, log), nil
 	case tcp:
-		return socket.NewSocketServer(lsn, slogLog), nil
+		return socket.NewSocketServer(lsn, log), nil
 	default:
 		return nil, errors.E(op, errors.Network, errors.Str("invalid DSN (tcp://:6001, unix://file.sock)"))
 	}

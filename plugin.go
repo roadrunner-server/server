@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/user"
 	"strconv"
@@ -10,7 +11,6 @@ import (
 	"sync"
 
 	"github.com/roadrunner-server/errors"
-	"go.uber.org/zap"
 
 	"github.com/roadrunner-server/pool/v2/pool"
 	staticPool "github.com/roadrunner-server/pool/v2/pool/static_pool"
@@ -26,7 +26,7 @@ type Plugin struct {
 	preparedCmd  []string
 	preparedEnvs []string
 
-	log     *zap.Logger
+	log     *slog.Logger
 	factory pool.Factory
 }
 
@@ -52,7 +52,7 @@ func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 		return errors.E(op, errors.Init, err)
 	}
 
-	p.log = new(zap.Logger)
+	p.log = new(slog.Logger)
 	p.log = log.NamedLogger(PluginName)
 
 	// here we may have 2 cases: command declared as a space-separated string or as a slice
@@ -101,7 +101,7 @@ func (p *Plugin) Serve() chan error {
 	if p.cfg.OnInit != nil {
 		err := newCommand(p.log, p.cfg.OnInit).start()
 		if err != nil {
-			p.log.Error("on_init was finished with errors", zap.Error(err))
+			p.log.Error("on_init was finished with errors", "error", err)
 			// if exit_on_error is set, we should return error and stop the server
 			if p.cfg.OnInit.ExitOnError {
 				errCh <- err
@@ -136,11 +136,11 @@ func (p *Plugin) NewWorker(ctx context.Context, env map[string]string) (*worker.
 }
 
 // NewPool issues new worker pool.
-func (p *Plugin) NewPool(ctx context.Context, cfg *pool.Config, env map[string]string, _ *zap.Logger) (*staticPool.Pool, error) {
+func (p *Plugin) NewPool(ctx context.Context, cfg *pool.Config, env map[string]string, _ *slog.Logger) (*staticPool.Pool, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	pl, err := staticPool.NewPool(ctx, pool.Command(p.customCmd(env)), p.factory, cfg, zapToSlog(p.log), staticPool.WithQueueSize(cfg.MaxQueueSize))
+	pl, err := staticPool.NewPool(ctx, pool.Command(p.customCmd(env)), p.factory, cfg, p.log, staticPool.WithQueueSize(cfg.MaxQueueSize))
 	if err != nil {
 		return nil, err
 	}
@@ -148,11 +148,11 @@ func (p *Plugin) NewPool(ctx context.Context, cfg *pool.Config, env map[string]s
 	return pl, nil
 }
 
-func (p *Plugin) NewPoolWithOptions(ctx context.Context, cfg *pool.Config, env map[string]string, _ *zap.Logger, options ...staticPool.Options) (*staticPool.Pool, error) {
+func (p *Plugin) NewPoolWithOptions(ctx context.Context, cfg *pool.Config, env map[string]string, _ *slog.Logger, options ...staticPool.Options) (*staticPool.Pool, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	pl, err := staticPool.NewPool(ctx, pool.Command(p.customCmd(env)), p.factory, cfg, zapToSlog(p.log), options...)
+	pl, err := staticPool.NewPool(ctx, pool.Command(p.customCmd(env)), p.factory, cfg, p.log, options...)
 	if err != nil {
 		return nil, err
 	}
@@ -168,13 +168,13 @@ func (p *Plugin) UID() int {
 
 	usr, err := user.Lookup(p.cfg.User)
 	if err != nil {
-		p.log.Error("failed to get user", zap.String("id", p.cfg.User))
+		p.log.Error("failed to get user", "id", p.cfg.User)
 		return 0
 	}
 
 	usrI32, err := strconv.ParseInt(usr.Uid, 10, 32)
 	if err != nil {
-		p.log.Error("failed to parse user id", zap.String("id", p.cfg.User))
+		p.log.Error("failed to parse user id", "id", p.cfg.User)
 		return 0
 	}
 
@@ -189,13 +189,13 @@ func (p *Plugin) GID() int {
 
 	usr, err := user.Lookup(p.cfg.User)
 	if err != nil {
-		p.log.Error("failed to get user", zap.String("id", p.cfg.User))
+		p.log.Error("failed to get user", "id", p.cfg.User)
 		return 0
 	}
 
 	grI32, err := strconv.ParseInt(usr.Gid, 10, 32)
 	if err != nil {
-		p.log.Error("failed to parse group id", zap.String("id", p.cfg.Group))
+		p.log.Error("failed to parse group id", "id", p.cfg.Group)
 		return 0
 	}
 
