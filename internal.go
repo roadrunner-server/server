@@ -102,8 +102,7 @@ func (p *Plugin) customCmd(env map[string]string) internalCmdWithArgs {
 		if p.cfg.User != "" {
 			err := process.ExecuteFromUser(cmd, p.cfg.User)
 			if err != nil {
-				p.log.Error("can't execute command from the user", "user", p.cfg.User, "error", err)
-				return nil
+				panic(fmt.Errorf("RoadRunner can't execute process from the specified user: %s, error: %w", p.cfg.User, err))
 			}
 		}
 
