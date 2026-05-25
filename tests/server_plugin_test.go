@@ -53,12 +53,10 @@ func TestAppPipes(t *testing.T) {
 	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	wg := &sync.WaitGroup{}
-	wg.Add(1)
 
 	stopCh := make(chan struct{}, 1)
 
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		for {
 			select {
 			case e := <-ch:
@@ -78,7 +76,7 @@ func TestAppPipes(t *testing.T) {
 				return
 			}
 		}
-	}()
+	})
 
 	stopCh <- struct{}{}
 	wg.Wait()
@@ -116,12 +114,10 @@ func TestAppPipesBigResp(t *testing.T) {
 	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	wg := &sync.WaitGroup{}
-	wg.Add(1)
 
 	stopCh := make(chan struct{}, 1)
 
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		for {
 			select {
 			case e := <-ch:
@@ -141,7 +137,7 @@ func TestAppPipesBigResp(t *testing.T) {
 				return
 			}
 		}
-	}()
+	})
 
 	time.Sleep(time.Second * 5)
 	stopCh <- struct{}{}
@@ -183,12 +179,10 @@ func TestAppSockets(t *testing.T) {
 	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	wg := &sync.WaitGroup{}
-	wg.Add(1)
 
 	stopCh := make(chan struct{}, 1)
 
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		for {
 			select {
 			case e := <-ch:
@@ -208,7 +202,7 @@ func TestAppSockets(t *testing.T) {
 				return
 			}
 		}
-	}()
+	})
 
 	time.Sleep(time.Second * 5)
 	stopCh <- struct{}{}
@@ -323,12 +317,10 @@ func TestAppTCPOnInit(t *testing.T) {
 	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	wg := &sync.WaitGroup{}
-	wg.Add(1)
 
 	stopCh := make(chan struct{}, 1)
 
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		for {
 			select {
 			case e := <-ch:
@@ -348,7 +340,7 @@ func TestAppTCPOnInit(t *testing.T) {
 				return
 			}
 		}
-	}()
+	})
 
 	time.Sleep(time.Second * 10)
 	stopCh <- struct{}{}
@@ -393,12 +385,10 @@ func TestAppSocketsOnInit(t *testing.T) {
 	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	wg := &sync.WaitGroup{}
-	wg.Add(1)
 
 	stopCh := make(chan struct{}, 1)
 
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		for {
 			select {
 			case e := <-ch:
@@ -418,7 +408,7 @@ func TestAppSocketsOnInit(t *testing.T) {
 				return
 			}
 		}
-	}()
+	})
 
 	time.Sleep(time.Second * 10)
 	stopCh <- struct{}{}
@@ -463,12 +453,10 @@ func TestAppSocketsOnInitFastClose(t *testing.T) {
 	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	wg := &sync.WaitGroup{}
-	wg.Add(1)
 
 	stopCh := make(chan struct{}, 1)
 
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		for {
 			select {
 			case e := <-ch:
@@ -488,7 +476,7 @@ func TestAppSocketsOnInitFastClose(t *testing.T) {
 				return
 			}
 		}
-	}()
+	})
 
 	time.Sleep(time.Second * 10)
 	stopCh <- struct{}{}
@@ -525,12 +513,10 @@ func TestAppTCP(t *testing.T) {
 	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	wg := &sync.WaitGroup{}
-	wg.Add(1)
 
 	stopCh := make(chan struct{}, 1)
 
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		for {
 			select {
 			case e := <-ch:
@@ -550,7 +536,7 @@ func TestAppTCP(t *testing.T) {
 				return
 			}
 		}
-	}()
+	})
 
 	stopCh <- struct{}{}
 	wg.Wait()
@@ -724,12 +710,10 @@ func TestOnInitMetrics(t *testing.T) {
 	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	wg := &sync.WaitGroup{}
-	wg.Add(1)
 
 	stopCh := make(chan struct{}, 1)
 
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		for {
 			select {
 			case e := <-ch:
@@ -749,7 +733,7 @@ func TestOnInitMetrics(t *testing.T) {
 				return
 			}
 		}
-	}()
+	})
 
 	stopCh <- struct{}{}
 	wg.Wait()
@@ -783,12 +767,10 @@ func TestNewPoolWithOptions(t *testing.T) {
 	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	wg := &sync.WaitGroup{}
-	wg.Add(1)
 
 	stopCh := make(chan struct{}, 1)
 
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		for {
 			select {
 			case e := <-ch:
@@ -808,7 +790,7 @@ func TestNewPoolWithOptions(t *testing.T) {
 				return
 			}
 		}
-	}()
+	})
 
 	stopCh <- struct{}{}
 	wg.Wait()
