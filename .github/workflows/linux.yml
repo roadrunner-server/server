@@ -17,7 +17,7 @@ jobs:
     timeout-minutes: 60
     strategy:
       matrix:
-        php: [ "8.4" ]
+        php: [ "8.5" ]
         go: [ stable ]
         os: [ "ubuntu-latest" ]
     steps:
@@ -69,12 +69,12 @@ jobs:
       - name: Run server unit tests with coverage
         run: |
           mkdir ./tests/coverage-ci
-          go test -timeout 20m -v -race -cover -tags=debug -failfast -coverpkg=$(cat ./tests/pkgs.txt) -coverprofile=./tests/coverage-ci/server_u.out -covermode=atomic ./
+          go test -timeout 20m -v -race -cover -tags=debug -failfast -coverpkg=github.com/roadrunner-server/server/v6 -coverprofile=./tests/coverage-ci/server_u.out -covermode=atomic ./
 
       - name: Run server e2e tests with coverage
         run: |
           cd tests
-          go test -timeout 20m -v -race -cover -tags=debug -failfast -coverpkg=$(cat pkgs.txt) -coverprofile=./coverage-ci/server.out -covermode=atomic ./
+          go test -timeout 20m -v -race -cover -tags=debug -failfast -coverpkg=github.com/roadrunner-server/server/v6 -coverprofile=./coverage-ci/server.out -covermode=atomic ./
 
       - name: Archive code coverage results
         uses: actions/upload-artifact@v7
@@ -90,12 +90,25 @@ jobs:
 
     timeout-minutes: 60
     steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+
       - name: Download code coverage results
         uses: actions/download-artifact@v8
+        with:
+          name: coverage
+          path: coverage
       - run: |
           echo 'mode: atomic' > summary.txt
-          tail -q -n +2 *.out >> summary.txt
-          sed -i '2,${/roadrunner/!d}' summary.txt
+          tail -q -n +2 coverage/*.out >> summary.txt
+          awk '
+            NR == 1 { print; next }
+            /^github\.com\/roadrunner-server\/server\/v6\// {
+              sub(/^github\.com\/roadrunner-server\/server\/v6\//, "", $0)
+              print
+            }
+          ' summary.txt > summary.filtered.txt
+          mv summary.filtered.txt summary.txt
 
       - name: upload to codecov
         uses: codecov/codecov-action@v6 # Docs: <https://github.com/codecov/codecov-action>
