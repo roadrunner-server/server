@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"os"
 	"os/exec"
@@ -38,12 +37,14 @@ func (b *command) start() error {
 		}
 	}
 
-	timer := time.NewTimer(b.cfg.ExecTimeout)
-
 	err := cmd.Start()
 	if err != nil {
 		return errors.E(op, err)
 	}
+
+	// Start the timer only after the process has launched successfully.
+	timer := time.NewTimer(b.cfg.ExecTimeout)
+	defer timer.Stop()
 
 	go func() {
 		errW := cmd.Wait()
@@ -71,7 +72,6 @@ func (b *command) start() error {
 		return nil
 
 	case err := <-stopCh:
-		timer.Stop()
 		return err
 	}
 }
@@ -83,38 +83,23 @@ func (b *command) Write(data []byte) (int, error) {
 
 // create command for the process
 func (b *command) createProcess(env map[string]string, cmd []string) *exec.Cmd {
-	// cmdArgs contain command arguments if the command in the form of: php <command> or ls <command> -i -b
-	var cmdArgs []string
+	cmdArgs := prepareCmd(cmd)
+
 	var execCmd *exec.Cmd
-
-	// TODO!: better way to handle commands, we should not use strings.Split based on space
-	// here we may have 2 cases: command declared as a space-separated string or as a slice
-	switch len(cmd) {
-	// command defined as a space-separated string
-	case 1:
-		// we know that the len is 1, so we can safely use the first element
-		cmdArgs = append(cmdArgs, strings.Split(cmd[0], " ")...)
-	default:
-		// we have a slice with 2 or more elements
-		// first element is the command, the rest are arguments
-		cmdArgs = cmd
-	}
-
 	if len(cmdArgs) == 1 {
-		execCmd = exec.CommandContext(context.Background(), cmd[0])
+		execCmd = exec.CommandContext(context.Background(), cmdArgs[0])
 	} else {
 		execCmd = exec.CommandContext(context.Background(), cmdArgs[0], cmdArgs[1:]...)
 	}
 
+	// OS env first, then config env so that user config takes precedence.
+	execCmd.Env = append(os.Environ(), execCmd.Env...)
+
 	// set env variables from the config
-	if len(env) > 0 {
-		for k, v := range env {
-			execCmd.Env = append(execCmd.Env, fmt.Sprintf("%s=%s", strings.ToUpper(k), os.Expand(v, os.Getenv)))
-		}
+	for k, v := range env {
+		execCmd.Env = append(execCmd.Env, strings.ToUpper(k)+"="+os.ExpandEnv(v))
 	}
 
-	// append system envs
-	execCmd.Env = append(execCmd.Env, os.Environ()...)
 	// redirect stderr and stdout into the Write function of the process.go
 	execCmd.Stderr = b
 	execCmd.Stdout = b
