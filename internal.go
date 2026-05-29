@@ -26,7 +26,7 @@ type internalCmdWithArgs func(command []string) *exec.Cmd
 // slice is used as-is.
 func prepareCmd(command []string) []string {
 	if len(command) == 1 {
-		return strings.Split(command[0], " ")
+		return strings.Fields(command[0])
 	}
 	return command
 }
