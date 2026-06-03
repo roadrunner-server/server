@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os/exec"
+	"slices"
 	"strings"
 
 	"github.com/roadrunner-server/errors"
@@ -20,6 +21,16 @@ type internalCommand func() *exec.Cmd
 // should be the same as pool.Command
 type internalCmdWithArgs func(command []string) *exec.Cmd
 
+// prepareCmd normalises a command slice: a single-element slice whose value is
+// a space-separated string is split into individual arguments; a multi-element
+// slice is used as-is.
+func prepareCmd(command []string) []string {
+	if len(command) == 1 {
+		return strings.Fields(command[0])
+	}
+	return command
+}
+
 // cmdFactory provides worker command factory associated with given context
 func (p *Plugin) cmdFactory(env map[string]string) internalCommand {
 	return func() *exec.Cmd {
@@ -32,14 +43,11 @@ func (p *Plugin) cmdFactory(env map[string]string) internalCommand {
 		}
 
 		// copy prepared envs
-		cmd.Env = make([]string, len(p.preparedEnvs))
-		copy(cmd.Env, p.preparedEnvs)
+		cmd.Env = slices.Clone(p.preparedEnvs)
 
 		// append external envs
-		if len(env) > 0 {
-			for k, v := range env {
-				cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", strings.ToUpper(k), v))
-			}
+		for k, v := range env {
+			cmd.Env = append(cmd.Env, strings.ToUpper(k)+"="+v)
 		}
 
 		process.IsolateProcess(cmd)
@@ -56,7 +64,7 @@ func (p *Plugin) cmdFactory(env map[string]string) internalCommand {
 	}
 }
 
-// customCmd used as and enhancement for the CmdFactory to use with a custom command string (used by default)
+// customCmd used as an enhancement for the CmdFactory to use with a custom command string (used by default)
 func (p *Plugin) customCmd(env map[string]string) internalCmdWithArgs {
 	return func(command []string) *exec.Cmd {
 		// if no command provided, use the server's one
@@ -64,21 +72,9 @@ func (p *Plugin) customCmd(env map[string]string) internalCmdWithArgs {
 			command = p.cfg.Command
 		}
 
+		preparedCmd := prepareCmd(command)
+
 		var cmd *exec.Cmd
-
-		preparedCmd := make([]string, 0, 5)
-		// here we may have 2 cases: command declared as a space-separated string or as a slice
-		switch len(command) {
-		// command defined as a space-separated string
-		case 1:
-			// we know that the len is 1, so we can safely use the first element
-			preparedCmd = append(preparedCmd, strings.Split(command[0], " ")...)
-		default:
-			// we have a slice with 2 or more elements
-			// first element is the command, the rest are arguments
-			preparedCmd = command
-		}
-
 		if len(preparedCmd) == 1 {
 			cmd = exec.CommandContext(context.Background(), preparedCmd[0])
 		} else {
@@ -86,14 +82,11 @@ func (p *Plugin) customCmd(env map[string]string) internalCmdWithArgs {
 		}
 
 		// copy prepared envs
-		cmd.Env = make([]string, len(p.preparedEnvs))
-		copy(cmd.Env, p.preparedEnvs)
+		cmd.Env = slices.Clone(p.preparedEnvs)
 
 		// append external envs
-		if len(env) > 0 {
-			for k, v := range env {
-				cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", strings.ToUpper(k), v))
-			}
+		for k, v := range env {
+			cmd.Env = append(cmd.Env, strings.ToUpper(k)+"="+v)
 		}
 
 		process.IsolateProcess(cmd)
@@ -117,8 +110,8 @@ func initFactory(log *slog.Logger, relay string) (pool.Factory, error) {
 		return pipe.NewPipeFactory(log), nil
 	}
 
-	dsn := strings.Split(relay, delim)
-	if len(dsn) != 2 {
+	network, _, ok := strings.Cut(relay, delim)
+	if !ok {
 		return nil, errors.E(op, errors.Network, errors.Str("invalid DSN (tcp://:6001, unix://file.sock)"))
 	}
 
@@ -127,11 +120,8 @@ func initFactory(log *slog.Logger, relay string) (pool.Factory, error) {
 		return nil, errors.E(op, errors.Network, err)
 	}
 
-	switch dsn[0] {
-	// sockets group
-	case unix:
-		return socket.NewSocketServer(lsn, log), nil
-	case tcp:
+	switch network {
+	case unix, tcp:
 		return socket.NewSocketServer(lsn, log), nil
 	default:
 		return nil, errors.E(op, errors.Network, errors.Str("invalid DSN (tcp://:6001, unix://file.sock)"))
