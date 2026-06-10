@@ -25,6 +25,9 @@ type Plugin struct {
 	preparedCmd  []string
 	preparedEnvs []string
 
+	uid int
+	gid int
+
 	log     *slog.Logger
 	factory pool.Factory
 }
@@ -52,6 +55,24 @@ func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 	}
 
 	p.log = log.NamedLogger(PluginName)
+
+	// resolve the configured run-as user's uid/gid once
+	if p.cfg.User != "" {
+		usr, err := user.Lookup(p.cfg.User)
+		if err != nil {
+			return errors.E(op, errors.Init, err)
+		}
+
+		p.uid, err = strconv.Atoi(usr.Uid)
+		if err != nil {
+			return errors.E(op, errors.Init, err)
+		}
+
+		p.gid, err = strconv.Atoi(usr.Gid)
+		if err != nil {
+			return errors.E(op, errors.Init, err)
+		}
+	}
 
 	p.preparedCmd = prepareCmd(p.cfg.Command)
 
@@ -146,41 +167,12 @@ func (p *Plugin) NewPoolWithOptions(ctx context.Context, cfg *pool.Config, env m
 	return pl, nil
 }
 
-// userInfo looks up the user once and returns uid and gid as ints.
-func (p *Plugin) userInfo() (uid int, gid int) {
-	if p.cfg.User == "" {
-		return 0, 0
-	}
-
-	usr, err := user.Lookup(p.cfg.User)
-	if err != nil {
-		p.log.Error("failed to get user", "id", p.cfg.User)
-		return 0, 0
-	}
-
-	uid, err = strconv.Atoi(usr.Uid)
-	if err != nil {
-		p.log.Error("failed to parse user id", "id", p.cfg.User)
-		return 0, 0
-	}
-
-	gid, err = strconv.Atoi(usr.Gid)
-	if err != nil {
-		p.log.Error("failed to parse group id", "id", p.cfg.User)
-		return 0, 0
-	}
-
-	return uid, gid
-}
-
 // UID returns a user id (if specified by user)
 func (p *Plugin) UID() int {
-	uid, _ := p.userInfo()
-	return uid
+	return p.uid
 }
 
 // GID returns a group id (if specified by user)
 func (p *Plugin) GID() int {
-	_, gid := p.userInfo()
-	return gid
+	return p.gid
 }
