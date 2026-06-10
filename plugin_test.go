@@ -77,6 +77,25 @@ func TestCommandUnknownUser(t *testing.T) {
 	})
 }
 
+func TestInitUnknownUser(t *testing.T) {
+	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
+	p := &Plugin{
+		preparedEnvs: make([]string, 0),
+		cfg:          &Config{},
+		log:          log,
+	}
+
+	v := viper.New()
+	v.Set("server.command", "php php_test_files/client.php echo pipes")
+	v.Set("server.user", "rr-definitely-missing-user")
+
+	cfg, err := InitMockCfg(v)
+	require.NoError(t, err)
+
+	err = p.Init(cfg, NewTestLogger(log))
+	require.Error(t, err)
+}
+
 func TestCommand1(t *testing.T) {
 	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	p := &Plugin{

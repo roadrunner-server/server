@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"os/user"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -58,6 +59,12 @@ func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 
 	// resolve the configured run-as user's uid/gid once
 	if p.cfg.User != "" {
+		// process.ExecuteFromUser is a no-op on Windows, and Windows uids (SIDs)
+		// are not numeric — reject the option explicitly instead of failing on Atoi.
+		if runtime.GOOS == "windows" {
+			return errors.E(op, errors.Init, errors.Str("server.user is not supported on windows"))
+		}
+
 		usr, err := user.Lookup(p.cfg.User)
 		if err != nil {
 			return errors.E(op, errors.Init, err)
