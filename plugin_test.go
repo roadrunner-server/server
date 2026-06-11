@@ -3,6 +3,9 @@ package server
 import (
 	"log/slog"
 	"os"
+	"os/user"
+	"runtime"
+	"strconv"
 	"testing"
 	"time"
 
@@ -75,6 +78,38 @@ func TestCommandUnknownUser(t *testing.T) {
 
 		_ = p.customCmd(nil)([]string{"php foo/bar"})
 	})
+}
+
+func TestInitResolvesUser(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("server.user is not supported on windows")
+	}
+
+	current, err := user.Current()
+	require.NoError(t, err)
+
+	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
+	p := &Plugin{
+		preparedEnvs: make([]string, 0),
+		cfg:          &Config{},
+		log:          log,
+	}
+
+	v := viper.New()
+	v.Set("server.command", "php php_test_files/client.php echo pipes")
+	v.Set("server.user", current.Username)
+
+	cfg, err := InitMockCfg(v)
+	require.NoError(t, err)
+	require.NoError(t, p.Init(cfg, NewTestLogger(log)))
+
+	uid, err := strconv.Atoi(current.Uid)
+	require.NoError(t, err)
+	gid, err := strconv.Atoi(current.Gid)
+	require.NoError(t, err)
+
+	require.Equal(t, uid, p.UID())
+	require.Equal(t, gid, p.GID())
 }
 
 func TestInitUnknownUser(t *testing.T) {
