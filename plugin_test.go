@@ -3,6 +3,9 @@ package server
 import (
 	"log/slog"
 	"os"
+	"os/user"
+	"runtime"
+	"strconv"
 	"testing"
 	"time"
 
@@ -75,6 +78,74 @@ func TestCommandUnknownUser(t *testing.T) {
 
 		_ = p.customCmd(nil)([]string{"php foo/bar"})
 	})
+}
+
+func TestInitResolvesUser(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("server.user is not supported on windows")
+	}
+
+	current, err := user.Current()
+	require.NoError(t, err)
+
+	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
+	p := &Plugin{
+		preparedEnvs: make([]string, 0),
+		cfg:          &Config{},
+		log:          log,
+	}
+
+	v := viper.New()
+	v.Set("server.command", "php php_test_files/client.php echo pipes")
+	v.Set("server.user", current.Username)
+
+	cfg, err := InitMockCfg(v)
+	require.NoError(t, err)
+	require.NoError(t, p.Init(cfg, NewTestLogger(log)))
+
+	uid, err := strconv.Atoi(current.Uid)
+	require.NoError(t, err)
+	gid, err := strconv.Atoi(current.Gid)
+	require.NoError(t, err)
+
+	require.Equal(t, uid, p.UID())
+	require.Equal(t, gid, p.GID())
+}
+
+func TestParseIDs(t *testing.T) {
+	resolved, err := parseIDs(&user.User{Uid: "1000", Gid: "1000"})
+	require.NoError(t, err)
+	require.Equal(t, &ids{uid: 1000, gid: 1000}, resolved)
+
+	resolved, err = parseIDs(&user.User{Uid: "S-1-5-21", Gid: "1000"})
+	require.ErrorContains(t, err, "failed to parse the user id")
+	require.Nil(t, resolved)
+
+	resolved, err = parseIDs(&user.User{Uid: "1000", Gid: "S-1-5-21"})
+	require.ErrorContains(t, err, "failed to parse the group id")
+	require.Nil(t, resolved)
+}
+
+func TestInitUnknownUser(t *testing.T) {
+	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
+	p := &Plugin{
+		preparedEnvs: make([]string, 0),
+		cfg:          &Config{},
+		log:          log,
+	}
+
+	v := viper.New()
+	v.Set("server.command", "php php_test_files/client.php echo pipes")
+	v.Set("server.user", "rr-definitely-missing-user")
+
+	cfg, err := InitMockCfg(v)
+	require.NoError(t, err)
+
+	err = p.Init(cfg, NewTestLogger(log))
+	require.Error(t, err)
+	// the failed resolution must leave the ids unset, reading as 0/0
+	require.Equal(t, 0, p.UID())
+	require.Equal(t, 0, p.GID())
 }
 
 func TestCommand1(t *testing.T) {

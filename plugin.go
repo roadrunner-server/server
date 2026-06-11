@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"os/user"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -25,8 +26,42 @@ type Plugin struct {
 	preparedCmd  []string
 	preparedEnvs []string
 
+	ids *ids
+
 	log     *slog.Logger
 	factory pool.Factory
+}
+
+// ids holds a resolved run-as user's numeric uid/gid pair.
+type ids struct {
+	uid int
+	gid int
+}
+
+// resolveUser looks the user up in the user database and returns its ids.
+func resolveUser(name string) (*ids, error) {
+	usr, err := user.Lookup(name)
+	if err != nil {
+		return nil, err
+	}
+
+	return parseIDs(usr)
+}
+
+// parseIDs converts the user database's textual ids to ints; non-numeric ids
+// are rejected.
+func parseIDs(usr *user.User) (*ids, error) {
+	uid, err := strconv.Atoi(usr.Uid)
+	if err != nil {
+		return nil, errors.Errorf("failed to parse the user id %q: %v", usr.Uid, err)
+	}
+
+	gid, err := strconv.Atoi(usr.Gid)
+	if err != nil {
+		return nil, errors.Errorf("failed to parse the group id %q: %v", usr.Gid, err)
+	}
+
+	return &ids{uid: uid, gid: gid}, nil
 }
 
 // Init application provider.
@@ -52,6 +87,20 @@ func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 	}
 
 	p.log = log.NamedLogger(PluginName)
+
+	// resolve the configured run-as user's uid/gid once
+	if p.cfg.User != "" {
+		// process.ExecuteFromUser is a no-op on Windows, and Windows uids (SIDs)
+		// are not numeric — reject the option explicitly instead of failing on Atoi.
+		if runtime.GOOS == "windows" {
+			return errors.E(op, errors.Init, errors.Str("server.user is not supported on windows"))
+		}
+
+		p.ids, err = resolveUser(p.cfg.User)
+		if err != nil {
+			return errors.E(op, errors.Init, err)
+		}
+	}
 
 	p.preparedCmd = prepareCmd(p.cfg.Command)
 
@@ -146,41 +195,20 @@ func (p *Plugin) NewPoolWithOptions(ctx context.Context, cfg *pool.Config, env m
 	return pl, nil
 }
 
-// userInfo looks up the user once and returns uid and gid as ints.
-func (p *Plugin) userInfo() (uid int, gid int) {
-	if p.cfg.User == "" {
-		return 0, 0
-	}
-
-	usr, err := user.Lookup(p.cfg.User)
-	if err != nil {
-		p.log.Error("failed to get user", "id", p.cfg.User)
-		return 0, 0
-	}
-
-	uid, err = strconv.Atoi(usr.Uid)
-	if err != nil {
-		p.log.Error("failed to parse user id", "id", p.cfg.User)
-		return 0, 0
-	}
-
-	gid, err = strconv.Atoi(usr.Gid)
-	if err != nil {
-		p.log.Error("failed to parse group id", "id", p.cfg.User)
-		return 0, 0
-	}
-
-	return uid, gid
-}
-
 // UID returns a user id (if specified by user)
 func (p *Plugin) UID() int {
-	uid, _ := p.userInfo()
-	return uid
+	if p.ids == nil {
+		return 0
+	}
+
+	return p.ids.uid
 }
 
 // GID returns a group id (if specified by user)
 func (p *Plugin) GID() int {
-	_, gid := p.userInfo()
-	return gid
+	if p.ids == nil {
+		return 0
+	}
+
+	return p.ids.gid
 }
