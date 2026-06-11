@@ -115,13 +115,15 @@ func TestInitResolvesUser(t *testing.T) {
 func TestParseIDs(t *testing.T) {
 	resolved, err := parseIDs(&user.User{Uid: "1000", Gid: "1000"})
 	require.NoError(t, err)
-	require.Equal(t, ids{uid: 1000, gid: 1000}, resolved)
+	require.Equal(t, &ids{uid: 1000, gid: 1000}, resolved)
 
-	_, err = parseIDs(&user.User{Uid: "S-1-5-21", Gid: "1000"})
+	resolved, err = parseIDs(&user.User{Uid: "S-1-5-21", Gid: "1000"})
 	require.ErrorContains(t, err, "failed to parse the user id")
+	require.Nil(t, resolved)
 
-	_, err = parseIDs(&user.User{Uid: "1000", Gid: "S-1-5-21"})
+	resolved, err = parseIDs(&user.User{Uid: "1000", Gid: "S-1-5-21"})
 	require.ErrorContains(t, err, "failed to parse the group id")
+	require.Nil(t, resolved)
 }
 
 func TestInitUnknownUser(t *testing.T) {
@@ -141,6 +143,9 @@ func TestInitUnknownUser(t *testing.T) {
 
 	err = p.Init(cfg, NewTestLogger(log))
 	require.Error(t, err)
+	// the failed resolution must leave the ids unset, reading as 0/0
+	require.Equal(t, 0, p.UID())
+	require.Equal(t, 0, p.GID())
 }
 
 func TestCommand1(t *testing.T) {

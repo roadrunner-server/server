@@ -26,7 +26,7 @@ type Plugin struct {
 	preparedCmd  []string
 	preparedEnvs []string
 
-	ids ids
+	ids *ids
 
 	log     *slog.Logger
 	factory pool.Factory
@@ -39,10 +39,10 @@ type ids struct {
 }
 
 // resolveUser looks the user up in the user database and returns its ids.
-func resolveUser(name string) (ids, error) {
+func resolveUser(name string) (*ids, error) {
 	usr, err := user.Lookup(name)
 	if err != nil {
-		return ids{}, err
+		return nil, err
 	}
 
 	return parseIDs(usr)
@@ -50,18 +50,18 @@ func resolveUser(name string) (ids, error) {
 
 // parseIDs converts the user database's textual ids to ints; non-numeric ids
 // are rejected.
-func parseIDs(usr *user.User) (ids, error) {
+func parseIDs(usr *user.User) (*ids, error) {
 	uid, err := strconv.Atoi(usr.Uid)
 	if err != nil {
-		return ids{}, errors.Errorf("failed to parse the user id %q: %v", usr.Uid, err)
+		return nil, errors.Errorf("failed to parse the user id %q: %v", usr.Uid, err)
 	}
 
 	gid, err := strconv.Atoi(usr.Gid)
 	if err != nil {
-		return ids{}, errors.Errorf("failed to parse the group id %q: %v", usr.Gid, err)
+		return nil, errors.Errorf("failed to parse the group id %q: %v", usr.Gid, err)
 	}
 
-	return ids{uid: uid, gid: gid}, nil
+	return &ids{uid: uid, gid: gid}, nil
 }
 
 // Init application provider.
@@ -90,7 +90,7 @@ func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 
 	// resolve the configured run-as user's uid/gid once; reset first so a
 	// re-Init without a configured user does not keep stale values
-	p.ids = ids{}
+	p.ids = nil
 	if p.cfg.User != "" {
 		// process.ExecuteFromUser is a no-op on Windows, and Windows uids (SIDs)
 		// are not numeric — reject the option explicitly instead of failing on Atoi.
@@ -199,10 +199,18 @@ func (p *Plugin) NewPoolWithOptions(ctx context.Context, cfg *pool.Config, env m
 
 // UID returns a user id (if specified by user)
 func (p *Plugin) UID() int {
+	if p.ids == nil {
+		return 0
+	}
+
 	return p.ids.uid
 }
 
 // GID returns a group id (if specified by user)
 func (p *Plugin) GID() int {
+	if p.ids == nil {
+		return 0
+	}
+
 	return p.ids.gid
 }
