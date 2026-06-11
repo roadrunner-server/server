@@ -26,18 +26,23 @@ type Plugin struct {
 	preparedCmd  []string
 	preparedEnvs []string
 
-	uid int
-	gid int
+	ids ids
 
 	log     *slog.Logger
 	factory pool.Factory
 }
 
-// resolveUser looks the user up in the user database and returns its uid/gid.
-func resolveUser(name string) (int, int, error) {
+// ids holds a resolved run-as user's numeric uid/gid pair.
+type ids struct {
+	uid int
+	gid int
+}
+
+// resolveUser looks the user up in the user database and returns its ids.
+func resolveUser(name string) (ids, error) {
 	usr, err := user.Lookup(name)
 	if err != nil {
-		return 0, 0, err
+		return ids{}, err
 	}
 
 	return parseIDs(usr)
@@ -45,18 +50,18 @@ func resolveUser(name string) (int, int, error) {
 
 // parseIDs converts the user database's textual ids to ints; non-numeric ids
 // are rejected.
-func parseIDs(usr *user.User) (int, int, error) {
+func parseIDs(usr *user.User) (ids, error) {
 	uid, err := strconv.Atoi(usr.Uid)
 	if err != nil {
-		return 0, 0, errors.Errorf("failed to parse the user id %q: %v", usr.Uid, err)
+		return ids{}, errors.Errorf("failed to parse the user id %q: %v", usr.Uid, err)
 	}
 
 	gid, err := strconv.Atoi(usr.Gid)
 	if err != nil {
-		return 0, 0, errors.Errorf("failed to parse the group id %q: %v", usr.Gid, err)
+		return ids{}, errors.Errorf("failed to parse the group id %q: %v", usr.Gid, err)
 	}
 
-	return uid, gid, nil
+	return ids{uid: uid, gid: gid}, nil
 }
 
 // Init application provider.
@@ -85,7 +90,7 @@ func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 
 	// resolve the configured run-as user's uid/gid once; reset first so a
 	// re-Init without a configured user does not keep stale values
-	p.uid, p.gid = 0, 0
+	p.ids = ids{}
 	if p.cfg.User != "" {
 		// process.ExecuteFromUser is a no-op on Windows, and Windows uids (SIDs)
 		// are not numeric — reject the option explicitly instead of failing on Atoi.
@@ -93,7 +98,7 @@ func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 			return errors.E(op, errors.Init, errors.Str("server.user is not supported on windows"))
 		}
 
-		p.uid, p.gid, err = resolveUser(p.cfg.User)
+		p.ids, err = resolveUser(p.cfg.User)
 		if err != nil {
 			return errors.E(op, errors.Init, err)
 		}
@@ -194,10 +199,10 @@ func (p *Plugin) NewPoolWithOptions(ctx context.Context, cfg *pool.Config, env m
 
 // UID returns a user id (if specified by user)
 func (p *Plugin) UID() int {
-	return p.uid
+	return p.ids.uid
 }
 
 // GID returns a group id (if specified by user)
 func (p *Plugin) GID() int {
-	return p.gid
+	return p.ids.gid
 }
