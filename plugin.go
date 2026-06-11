@@ -88,9 +88,7 @@ func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 
 	p.log = log.NamedLogger(PluginName)
 
-	// resolve the configured run-as user's uid/gid once; reset first so a
-	// re-Init without a configured user does not keep stale values
-	p.ids = nil
+	// resolve the configured run-as user's uid/gid once
 	if p.cfg.User != "" {
 		// process.ExecuteFromUser is a no-op on Windows, and Windows uids (SIDs)
 		// are not numeric — reject the option explicitly instead of failing on Atoi.

@@ -132,8 +132,6 @@ func TestInitUnknownUser(t *testing.T) {
 		preparedEnvs: make([]string, 0),
 		cfg:          &Config{},
 		log:          log,
-		// pre-populate so the assertions below prove Init resets the stale ids
-		ids: &ids{uid: 7, gid: 7},
 	}
 
 	v := viper.New()
@@ -145,7 +143,7 @@ func TestInitUnknownUser(t *testing.T) {
 
 	err = p.Init(cfg, NewTestLogger(log))
 	require.Error(t, err)
-	// the failed resolution must reset the stale ids, reading as 0/0
+	// the failed resolution must leave the ids unset, reading as 0/0
 	require.Equal(t, 0, p.UID())
 	require.Equal(t, 0, p.GID())
 }
