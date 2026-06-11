@@ -33,6 +33,32 @@ type Plugin struct {
 	factory pool.Factory
 }
 
+// resolveUser looks the user up in the user database and returns its uid/gid.
+func resolveUser(name string) (int, int, error) {
+	usr, err := user.Lookup(name)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return parseIDs(usr)
+}
+
+// parseIDs converts the user database's textual ids to ints; non-numeric ids
+// are rejected.
+func parseIDs(usr *user.User) (int, int, error) {
+	uid, err := strconv.Atoi(usr.Uid)
+	if err != nil {
+		return 0, 0, errors.Errorf("failed to parse the user id %q: %v", usr.Uid, err)
+	}
+
+	gid, err := strconv.Atoi(usr.Gid)
+	if err != nil {
+		return 0, 0, errors.Errorf("failed to parse the group id %q: %v", usr.Gid, err)
+	}
+
+	return uid, gid, nil
+}
+
 // Init application provider.
 func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 	const op = errors.Op("server_plugin_init")
@@ -67,17 +93,7 @@ func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 			return errors.E(op, errors.Init, errors.Str("server.user is not supported on windows"))
 		}
 
-		usr, err := user.Lookup(p.cfg.User)
-		if err != nil {
-			return errors.E(op, errors.Init, err)
-		}
-
-		p.uid, err = strconv.Atoi(usr.Uid)
-		if err != nil {
-			return errors.E(op, errors.Init, err)
-		}
-
-		p.gid, err = strconv.Atoi(usr.Gid)
+		p.uid, p.gid, err = resolveUser(p.cfg.User)
 		if err != nil {
 			return errors.E(op, errors.Init, err)
 		}

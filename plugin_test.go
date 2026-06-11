@@ -112,6 +112,19 @@ func TestInitResolvesUser(t *testing.T) {
 	require.Equal(t, gid, p.GID())
 }
 
+func TestParseIDs(t *testing.T) {
+	uid, gid, err := parseIDs(&user.User{Uid: "1000", Gid: "1000"})
+	require.NoError(t, err)
+	require.Equal(t, 1000, uid)
+	require.Equal(t, 1000, gid)
+
+	_, _, err = parseIDs(&user.User{Uid: "S-1-5-21", Gid: "1000"})
+	require.ErrorContains(t, err, "failed to parse the user id")
+
+	_, _, err = parseIDs(&user.User{Uid: "1000", Gid: "S-1-5-21"})
+	require.ErrorContains(t, err, "failed to parse the group id")
+}
+
 func TestInitUnknownUser(t *testing.T) {
 	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	p := &Plugin{
