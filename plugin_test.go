@@ -345,3 +345,23 @@ func TestEnv4(t *testing.T) {
 
 	t.Fatal("FOO not found")
 }
+
+func TestName(t *testing.T) {
+	require.Equal(t, PluginName, (&Plugin{}).Name())
+}
+
+// TestUIDGIDWithoutUser covers the nil guard: with no user configured the
+// plugin reports 0 rather than dereferencing the unset ids.
+func TestUIDGIDWithoutUser(t *testing.T) {
+	p := &Plugin{}
+
+	require.Equal(t, 0, p.UID())
+	require.Equal(t, 0, p.GID())
+}
+
+func TestUIDGIDWithResolvedUser(t *testing.T) {
+	p := &Plugin{ids: &ids{uid: 1234, gid: 5678}}
+
+	require.Equal(t, 1234, p.UID())
+	require.Equal(t, 5678, p.GID())
+}
