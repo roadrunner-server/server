@@ -69,12 +69,12 @@ jobs:
       - name: Run server unit tests with coverage
         run: |
           mkdir ./tests/coverage-ci
-          go test -timeout 20m -v -race -cover -tags=debug -failfast -coverpkg=github.com/roadrunner-server/server/v6 -coverprofile=./tests/coverage-ci/server_u.out -covermode=atomic ./
+          go test -timeout 20m -v -race -cover -tags=debug -coverpkg=./... -coverprofile=./tests/coverage-ci/server_u.out -covermode=atomic ./...
 
       - name: Run server e2e tests with coverage
         run: |
           cd tests
-          go test -timeout 20m -v -race -cover -tags=debug -failfast -coverpkg=github.com/roadrunner-server/server/v6 -coverprofile=./coverage-ci/server.out -covermode=atomic ./
+          go test -timeout 20m -v -race -cover -tags=debug -coverpkg=github.com/roadrunner-server/server/v6/... -coverprofile=./coverage-ci/server.out -covermode=atomic ./...
 
       - name: Archive code coverage results
         uses: actions/upload-artifact@v7
@@ -109,6 +109,12 @@ jobs:
             }
           ' summary.txt > summary.filtered.txt
           mv summary.filtered.txt summary.txt
+          # a profile that maps to no plugin source uploads fine and reports 0%
+          blocks=$(($(wc -l < summary.txt) - 1))
+          if [ "$blocks" -lt 10 ]; then
+            echo "::error::coverage summary holds $blocks blocks, the profile does not map to plugin sources"
+            exit 1
+          fi
 
       - name: upload to codecov
         uses: codecov/codecov-action@v7 # Docs: <https://github.com/codecov/codecov-action>
