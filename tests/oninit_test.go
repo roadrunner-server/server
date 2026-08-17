@@ -3,7 +3,9 @@ package tests
 import (
 	"io"
 	"net/http"
+	"strings"
 	"testing"
+	"time"
 
 	"tests/helpers"
 
@@ -49,13 +51,26 @@ func TestOnInitTimeoutFailsServe(t *testing.T) {
 
 // TestOnInitDeclaresMetric drives the on_init script that registers a collector
 // over rpc, then scrapes the metrics endpoint. The old test booted this config
-// and asserted nothing, so a script that failed to declare anything passed.
+// and asserted nothing, which is how the script's declare payload went stale
+// without anyone noticing.
 func TestOnInitDeclaresMetric(t *testing.T) {
 	helpers.Start(t,
 		"configs/.rr-metrics-oninit.yaml",
 		[]any{&server.Plugin{}, &rpcPlugin.Plugin{}, &metrics.Plugin{}},
 		helpers.WithTCPProbe(metricsAddr),
 	)
+
+	var last string
+	require.Eventually(t, func() bool {
+		last = scrapeMetrics(t)
+		return strings.Contains(last, "foo_bar_test")
+	}, time.Second*15, time.Millisecond*100,
+		"the on_init script's collector never reached the metrics endpoint")
+}
+
+// scrapeMetrics fetches the exporter output.
+func scrapeMetrics(t *testing.T) string {
+	t.Helper()
 
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://"+metricsAddr+"/metrics", nil)
 	require.NoError(t, err)
@@ -67,7 +82,7 @@ func TestOnInitDeclaresMetric(t *testing.T) {
 
 	body, err := io.ReadAll(resp.Body)
 	require.NoError(t, err)
-
 	require.Equal(t, http.StatusOK, resp.StatusCode)
-	require.Contains(t, string(body), "foo_bar_test", "the on_init script's collector was never declared")
+
+	return string(body)
 }
