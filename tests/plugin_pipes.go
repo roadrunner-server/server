@@ -68,8 +68,6 @@ func (f *Foo) Init(p Configurer, workerFactory Server) error {
 }
 
 func (f *Foo) Serve() chan error {
-	const op = errors.Op("serve")
-
 	// test payload for echo
 	r := &payload.Payload{
 		Context: nil,

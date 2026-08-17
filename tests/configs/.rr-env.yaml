@@ -1,12 +1,13 @@
 version: '3'
 
 server:
-  command: "php php_test_files/client.php echo pipes"
+  command: "php php_test_files/client.php env pipes"
   relay: "pipes"
   relay_timeout: "20s"
   env:
-    - DATABASE_URL: "mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?serverVersion=5.7"
+    - RR_PLAIN: "plain-value"
+    - RR_EXPANDED: "prefix-${RR_TEST_FROM_OS}-suffix"
 
 logs:
   mode: development
-  level: info
+  level: error
