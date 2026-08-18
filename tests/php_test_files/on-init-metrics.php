@@ -2,34 +2,24 @@
 
 declare(strict_types=1);
 
+// deprecation notices on stdout would corrupt nothing here, but keep the
+// on_init output clean so a failure is readable in the server log
+ini_set('display_errors', 'stderr');
+
 require __DIR__ . '/vendor/autoload.php';
 
-use Spiral\Goridge\Relay;
 use Spiral\Goridge\RPC\RPC;
+use Spiral\RoadRunner\Metrics\Collector;
+use Spiral\RoadRunner\Metrics\Metrics;
 
-$rpc = new RPC(
-    Relay::create('tcp://0.0.0.0:6001')
+$metrics = new Metrics(RPC::create('tcp://127.0.0.1:6001'));
+
+$metrics->declare(
+    'test',
+    Collector::counter()
+        ->withNamespace('foo')
+        ->withSubsystem('bar')
+        ->withHelp('test counter declared from on_init'),
 );
-echo "foo";
-$rpc = $rpc->withServicePrefix('metrics');
 
-$rpc->call('Declare', [
-    'name'      => 'test',
-    'collector' => [
-        'namespace' => 'foo',
-        'subsystem' => 'bar',
-        'type'      => 'counter',
-        'help'      => '',
-        'labels'    => [],
-        'buckets'   => [],
-    ],
-]);
-
-echo "foo2";
-$rpc->call('Add', [
-    'name'   => 'test',
-    'value'  => 1.0,
-    'labels' => [],
-]);
-
-echo "ON INIT";
+$metrics->add('test', 1);

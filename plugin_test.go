@@ -1,9 +1,12 @@
 package server
 
 import (
+	"bytes"
+	"io"
 	"log/slog"
 	"os"
 	"os/user"
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"testing"
@@ -344,4 +347,100 @@ func TestEnv4(t *testing.T) {
 	}
 
 	t.Fatal("FOO not found")
+}
+
+func TestName(t *testing.T) {
+	require.Equal(t, PluginName, (&Plugin{}).Name())
+}
+
+// TestUIDGIDWithoutUser covers the nil guard: with no user configured the
+// plugin reports 0 rather than dereferencing the unset ids.
+func TestUIDGIDWithoutUser(t *testing.T) {
+	p := &Plugin{}
+
+	require.Equal(t, 0, p.UID())
+	require.Equal(t, 0, p.GID())
+}
+
+func TestUIDGIDWithResolvedUser(t *testing.T) {
+	p := &Plugin{ids: &ids{uid: 1234, gid: 5678}}
+
+	require.Equal(t, 1234, p.UID())
+	require.Equal(t, 5678, p.GID())
+}
+
+func TestConfigInitDefaults(t *testing.T) {
+	t.Run("command is required", func(t *testing.T) {
+		require.ErrorContains(t, (&Config{}).InitDefaults(), "command should not be empty")
+	})
+
+	t.Run("relay defaults to pipes", func(t *testing.T) {
+		cfg := &Config{Command: []string{"php", "worker.php"}}
+		require.NoError(t, cfg.InitDefaults())
+		require.Equal(t, "pipes", cfg.Relay)
+	})
+
+	t.Run("relay is left alone when set", func(t *testing.T) {
+		cfg := &Config{Command: []string{"php", "worker.php"}, Relay: "tcp://127.0.0.1:9999"}
+		require.NoError(t, cfg.InitDefaults())
+		require.Equal(t, "tcp://127.0.0.1:9999", cfg.Relay)
+	})
+
+	t.Run("on_init command is required", func(t *testing.T) {
+		cfg := &Config{Command: []string{"php", "worker.php"}, OnInit: &InitConfig{}}
+		require.ErrorContains(t, cfg.InitDefaults(), "on_init command should not be empty")
+	})
+
+	t.Run("on_init exec timeout defaults to a minute", func(t *testing.T) {
+		cfg := &Config{
+			Command: []string{"php", "worker.php"},
+			OnInit:  &InitConfig{Command: []string{"php", "init.php"}},
+		}
+		require.NoError(t, cfg.InitDefaults())
+		require.Equal(t, time.Minute, cfg.OnInit.ExecTimeout)
+	})
+
+	t.Run("on_init exec timeout is left alone when set", func(t *testing.T) {
+		cfg := &Config{
+			Command: []string{"php", "worker.php"},
+			OnInit:  &InitConfig{Command: []string{"php", "init.php"}, ExecTimeout: time.Second * 5},
+		}
+		require.NoError(t, cfg.InitDefaults())
+		require.Equal(t, time.Second*5, cfg.OnInit.ExecTimeout)
+	})
+}
+
+// TestCommandWriteForwardsToLogger covers the io.Writer the on_init command's
+// output is piped through.
+func TestCommandWriteForwardsToLogger(t *testing.T) {
+	var buf bytes.Buffer
+	c := newCommand(slog.New(slog.NewTextHandler(&buf, nil)), &InitConfig{})
+
+	n, err := c.Write([]byte("hello from on_init"))
+
+	require.NoError(t, err)
+	require.Equal(t, len("hello from on_init"), n)
+	require.Contains(t, buf.String(), "hello from on_init")
+}
+
+// TestCreateProcessAppliesEnv checks config env is uppercased, expanded and
+// appended after the OS environment so it wins.
+func TestCreateProcessAppliesEnv(t *testing.T) {
+	t.Setenv("SERVER_TEST_BASE", "expanded")
+
+	c := newCommand(slog.New(slog.NewTextHandler(io.Discard, nil)), &InitConfig{})
+	cmd := c.createProcess(map[string]string{"lower_key": "${SERVER_TEST_BASE}-value"}, []string{"php", "worker.php"})
+
+	require.Equal(t, "php", filepath.Base(cmd.Path))
+	require.Equal(t, []string{"php", "worker.php"}, cmd.Args)
+	require.Contains(t, cmd.Env, "LOWER_KEY=expanded-value")
+}
+
+// TestCreateProcessSingleArgument covers the branch where the command carries
+// no arguments.
+func TestCreateProcessSingleArgument(t *testing.T) {
+	c := newCommand(slog.New(slog.NewTextHandler(io.Discard, nil)), &InitConfig{})
+	cmd := c.createProcess(nil, []string{"php"})
+
+	require.Equal(t, []string{"php"}, cmd.Args)
 }

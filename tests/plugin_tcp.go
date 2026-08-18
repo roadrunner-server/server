@@ -21,7 +21,6 @@ func (f *Foo3) Init(p Configurer, workerFactory Server) error {
 }
 
 func (f *Foo3) Serve() chan error {
-	const op = errors.Op("serve")
 	var err error
 	errCh := make(chan error, 1)
 	conf := &serverImpl.Config{}
