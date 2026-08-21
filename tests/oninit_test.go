@@ -1,9 +1,12 @@
 package tests
 
 import (
+	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"testing"
+	"time"
 
 	"tests/helpers"
 
@@ -47,18 +50,9 @@ func TestOnInitTimeoutFailsServe(t *testing.T) {
 	require.ErrorContains(t, err, "startup process has been killed by timeout")
 }
 
-// TestOnInitRunsWithMetricsEndpoint boots the config whose on_init script talks
-// to the metrics plugin over rpc and checks the exporter is serving.
-//
-// The stronger assertion - that the script's collector shows up as
-// foo_bar_test - cannot pass yet. The metrics plugin resolves api-go beta.13,
-// which carries the connect-era protos, while spiral/roadrunner-metrics 3.3.0
-// speaks the v1 line, so the Declare message decodes empty:
-//
-//	declaring new metric name="" type=COLLECTOR_TYPE_UNSPECIFIED namespace=""
-//
-// Once the plugin betas are retagged against api-go beta.14, swap the body for
-// a poll on foo_bar_test.
+// TestOnInitRunsWithMetricsEndpoint boots the config whose on_init script
+// declares a foo_bar_test counter over rpc and checks the collector reaches
+// the exporter.
 func TestOnInitRunsWithMetricsEndpoint(t *testing.T) {
 	helpers.Start(t,
 		"configs/.rr-metrics-oninit.yaml",
@@ -66,26 +60,39 @@ func TestOnInitRunsWithMetricsEndpoint(t *testing.T) {
 		helpers.WithTCPProbe(metricsAddr),
 	)
 
-	body := scrapeMetrics(t)
-
-	require.Contains(t, body, "go_goroutines", "the metrics exporter is not serving")
+	// the script runs while the server is coming up, so the collector may
+	// land shortly after the exporter port opens
+	require.Eventually(t, func() bool {
+		body, err := scrapeMetrics(t)
+		return err == nil && strings.Contains(body, "foo_bar_test")
+	}, 10*time.Second, 100*time.Millisecond,
+		"the on_init script's foo_bar_test collector never showed up in the exporter output")
 }
 
 // scrapeMetrics fetches the exporter output.
-func scrapeMetrics(t *testing.T) string {
+func scrapeMetrics(t *testing.T) (string, error) {
 	t.Helper()
 
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://"+metricsAddr+"/metrics", nil)
-	require.NoError(t, err)
+	if err != nil {
+		return "", err
+	}
 
 	resp, err := http.DefaultClient.Do(req)
-	require.NoError(t, err)
+	if err != nil {
+		return "", err
+	}
 
-	defer func() { require.NoError(t, resp.Body.Close()) }()
+	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(resp.Body)
-	require.NoError(t, err)
-	require.Equal(t, http.StatusOK, resp.StatusCode)
+	if err != nil {
+		return "", err
+	}
 
-	return string(body)
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("unexpected status %d from the metrics endpoint", resp.StatusCode)
+	}
+
+	return string(body), nil
 }
