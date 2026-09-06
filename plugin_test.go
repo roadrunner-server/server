@@ -9,11 +9,13 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
 	"slices"
 
+	"github.com/roadrunner-server/tcplisten"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 )
@@ -44,8 +46,8 @@ func (c *Cfg) Overwrite(_ map[string]any) error {
 	return nil
 }
 
-func (c *Cfg) Has(_ string) bool {
-	return true
+func (c *Cfg) Has(name string) bool {
+	return c.v.IsSet(name)
 }
 
 func (c *Cfg) GracefulTimeout() time.Duration {
@@ -408,6 +410,167 @@ func TestConfigInitDefaults(t *testing.T) {
 		require.NoError(t, cfg.InitDefaults())
 		require.Equal(t, time.Second*5, cfg.OnInit.ExecTimeout)
 	})
+}
+
+func TestConfigRelaySocketDecode(t *testing.T) {
+	zero := 0
+	tests := []struct {
+		name string
+		yaml string
+		want *tcplisten.UnixSocketOptions
+	}{
+		{name: "omitted"},
+		{
+			name: "empty",
+			yaml: "  relay_socket: {}\n",
+			want: &tcplisten.UnixSocketOptions{},
+		},
+		{
+			name: "mode only",
+			yaml: "  relay_socket:\n    mode: \"0660\"\n",
+			want: &tcplisten.UnixSocketOptions{Mode: "0660"},
+		},
+		{
+			name: "zero mode",
+			yaml: "  relay_socket:\n    mode: \"0000\"\n",
+			want: &tcplisten.UnixSocketOptions{Mode: "0000"},
+		},
+		{
+			name: "zero uid",
+			yaml: "  relay_socket:\n    uid: 0\n",
+			want: &tcplisten.UnixSocketOptions{UID: &zero},
+		},
+		{
+			name: "zero gid",
+			yaml: "  relay_socket:\n    gid: 0\n",
+			want: &tcplisten.UnixSocketOptions{GID: &zero},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			v := viper.New()
+			v.SetConfigType("yaml")
+			require.NoError(t, v.ReadConfig(strings.NewReader("server:\n  command: php worker.php\n  user: worker-user\n  group: worker-group\n"+tt.yaml)))
+			cfg, err := InitMockCfg(v)
+			require.NoError(t, err)
+
+			var decoded Config
+			require.NoError(t, cfg.UnmarshalKey(PluginName, &decoded))
+			require.Equal(t, tt.want, decoded.RelaySocket)
+			require.Equal(t, "worker-user", decoded.User)
+			require.Equal(t, "worker-group", decoded.Group)
+		})
+	}
+}
+
+func TestValidateRelaySocketIDs(t *testing.T) {
+	type signedID int64
+	type unsignedID uint64
+	tests := []struct {
+		name  string
+		value any
+		valid bool
+	}{
+		{name: "nil", valid: true},
+		{name: "signed zero", value: signedID(0), valid: true},
+		{name: "signed maximum", value: signedID(4294967294), valid: true},
+		{name: "signed negative", value: signedID(-1)},
+		{name: "signed overflow", value: signedID(4294967295)},
+		{name: "unsigned zero", value: unsignedID(0), valid: true},
+		{name: "unsigned maximum", value: unsignedID(4294967294), valid: true},
+		{name: "unsigned overflow", value: unsignedID(4294967295)},
+		{name: "float32 integer", value: float32(33), valid: true},
+		{name: "float32 fraction", value: float32(1.9)},
+		{name: "float64 integer", value: float64(33), valid: true},
+		{name: "hexadecimal string", value: "0x21", valid: true},
+		{name: "octal string", value: "041", valid: true},
+	}
+
+	for _, field := range []string{"uid", "gid"} {
+		for _, tt := range tests {
+			t.Run(field+"/"+tt.name, func(t *testing.T) {
+				v := viper.New()
+				v.Set("server.relay_socket", map[string]any{field: tt.value})
+				cfg, err := InitMockCfg(v)
+				require.NoError(t, err)
+
+				err = validateRelaySocketIDs(cfg)
+				if tt.valid {
+					require.NoError(t, err)
+				} else {
+					require.ErrorContains(t, err, "server.relay_socket."+field)
+				}
+			})
+		}
+	}
+}
+
+func TestInitRelaySocketWithoutRawChild(t *testing.T) {
+	options := &tcplisten.UnixSocketOptions{Mode: "0660"}
+	v := viper.New()
+	v.Set("server", &Config{
+		Command:     []string{"php", "worker.php"},
+		Relay:       "pipes",
+		RelaySocket: options,
+	})
+	cfg, err := InitMockCfg(v)
+	require.NoError(t, err)
+	require.False(t, cfg.Has("server.relay_socket"))
+
+	p := &Plugin{}
+	log := slog.New(slog.NewTextHandler(io.Discard, nil))
+	require.ErrorContains(t, p.Init(cfg, NewTestLogger(log)), "server.relay_socket")
+	require.Same(t, options, p.cfg.RelaySocket)
+	require.Nil(t, p.factory)
+}
+
+func TestInitRelaySocketInvalidRelay(t *testing.T) {
+	tests := []struct {
+		name  string
+		relay string
+	}{
+		{name: "default pipes"},
+		{name: "pipes", relay: "pipes"},
+		{name: "tcp", relay: "tcp://127.0.0.1:0"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for _, mode := range []string{"", "0660"} {
+				t.Run("mode="+mode, func(t *testing.T) {
+					v := viper.New()
+					v.Set("server.command", "php worker.php")
+					v.Set("server.relay", tt.relay)
+					v.Set("server.relay_socket", map[string]any{"mode": mode})
+					v.Set("server.user", "rr-definitely-missing-user")
+					cfg, err := InitMockCfg(v)
+					require.NoError(t, err)
+
+					p := &Plugin{}
+					log := slog.New(slog.NewTextHandler(io.Discard, nil))
+					require.ErrorContains(t, p.Init(cfg, NewTestLogger(log)), "server.relay_socket")
+					require.Nil(t, p.factory)
+					require.Nil(t, p.ids)
+					if tt.relay == "" {
+						require.Equal(t, "pipes", p.cfg.Relay)
+					}
+				})
+			}
+		})
+	}
+}
+
+func TestInitFactoryWithoutRelaySocket(t *testing.T) {
+	for _, relay := range []string{"", "pipes", "tcp://127.0.0.1:0"} {
+		t.Run(relay, func(t *testing.T) {
+			log := slog.New(slog.NewTextHandler(io.Discard, nil))
+			factory, err := initFactory(log, relay, nil)
+			require.NoError(t, err)
+			require.NotNil(t, factory)
+			require.NoError(t, factory.Close())
+		})
+	}
 }
 
 // TestCommandWriteForwardsToLogger covers the io.Writer the on_init command's

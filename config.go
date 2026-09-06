@@ -1,9 +1,13 @@
 package server
 
 import (
+	"math"
+	"reflect"
+	"strconv"
 	"time"
 
 	"github.com/roadrunner-server/errors"
+	"github.com/roadrunner-server/tcplisten"
 )
 
 // Config All config (.rr.yaml)
@@ -23,6 +27,8 @@ type Config struct {
 	// "pipes", "tcp://:6001", "unix://rr.sock"
 	// This config section must not change on re-configuration.
 	Relay string `mapstructure:"relay"`
+	// RelaySocket sets permissions and ownership for a filesystem UNIX relay socket.
+	RelaySocket *tcplisten.UnixSocketOptions `mapstructure:"relay_socket"`
 }
 
 type InitConfig struct {
@@ -54,6 +60,10 @@ func (cfg *Config) InitDefaults() error {
 		cfg.Relay = "pipes"
 	}
 
+	if err := cfg.RelaySocket.Validate(cfg.Relay); err != nil {
+		return errors.E(errors.Op("server.relay_socket"), err)
+	}
+
 	if cfg.OnInit != nil {
 		if len(cfg.OnInit.Command) == 0 {
 			return errors.Str("on_init command should not be empty")
@@ -61,6 +71,49 @@ func (cfg *Config) InitDefaults() error {
 
 		if cfg.OnInit.ExecTimeout == 0 {
 			cfg.OnInit.ExecTimeout = time.Minute
+		}
+	}
+
+	return nil
+}
+
+// Check ownership values before Viper converts them to integers.
+func validateRelaySocketIDs(cfg Configurer) error {
+	const key = "server.relay_socket"
+	if !cfg.Has(key) {
+		return nil
+	}
+
+	var raw map[string]any
+	if err := cfg.UnmarshalKey(key, &raw); err != nil {
+		return errors.E(errors.Op(key), err)
+	}
+
+	for _, field := range []string{"uid", "gid"} {
+		if raw[field] == nil {
+			continue
+		}
+
+		value := reflect.ValueOf(raw[field])
+		valid := false
+		switch value.Kind() { //nolint:exhaustive // Other kinds are invalid ownership values.
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			id := value.Int()
+			valid = id >= 0 && id < 1<<32-1
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+			valid = value.Uint() < 1<<32-1
+		case reflect.String:
+			id, err := strconv.ParseInt(value.String(), 0, strconv.IntSize)
+			valid = err == nil && id >= 0 && id < 1<<32-1
+		case reflect.Float32, reflect.Float64:
+			id := value.Float()
+			valid = id >= 0 && id < 1<<32-1 && id == math.Trunc(id)
+		default:
+			valid = false
+		}
+
+		if !valid {
+			return errors.Errorf("%s.%s: must be an integer from 0 to 4294967294", key, field)
 		}
 	}
 

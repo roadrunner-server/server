@@ -104,7 +104,7 @@ func (p *Plugin) customCmd(env map[string]string) internalCmdWithArgs {
 }
 
 // creates relay and worker factory.
-func initFactory(log *slog.Logger, relay string) (pool.Factory, error) {
+func initFactory(log *slog.Logger, relay string, relaySocket *tcplisten.UnixSocketOptions) (pool.Factory, error) {
 	const op = errors.Op("server_plugin_init_factory")
 	if relay == "" || relay == pipes {
 		return pipe.NewPipeFactory(log), nil
@@ -115,7 +115,7 @@ func initFactory(log *slog.Logger, relay string) (pool.Factory, error) {
 		return nil, errors.E(op, errors.Network, errors.Str("invalid DSN (tcp://:6001, unix://file.sock)"))
 	}
 
-	lsn, err := tcplisten.CreateListener(relay)
+	lsn, err := tcplisten.CreateListenerWithOptions(relay, relaySocket)
 	if err != nil {
 		return nil, errors.E(op, errors.Network, err)
 	}
