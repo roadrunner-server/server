@@ -24,15 +24,16 @@ func TestInitRelaySocketPermissions(t *testing.T) {
 	t.Cleanup(func() { require.NoError(t, os.RemoveAll(dir)) })
 
 	tests := []struct {
+		name string
 		mode string
 		want os.FileMode
 	}{
-		{mode: "0660", want: 0o660},
-		{mode: "0000", want: 0},
+		{name: "owner and group access", mode: "0660", want: 0o660},
+		{name: "zero mode", mode: "0000", want: 0},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.mode, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			path := filepath.Join(dir, tt.mode+".sock")
 			relay := "unix://" + path
 			v := viper.New()
@@ -107,7 +108,9 @@ func TestInitRelaySocketBeforeFilesystemEffects(t *testing.T) {
 
 			p := &Plugin{}
 			log := slog.New(slog.NewTextHandler(io.Discard, nil))
-			require.ErrorContains(t, p.Init(cfg, NewTestLogger(log)), "server.relay_socket")
+			err = p.Init(cfg, NewTestLogger(log))
+			require.ErrorContains(t, err, "server.relay_socket")
+			require.ErrorContains(t, err, "invalid unix socket mode")
 			require.Nil(t, p.factory)
 			require.Nil(t, p.preparedEnvs)
 

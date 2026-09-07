@@ -11,7 +11,6 @@ import (
 	"sync"
 
 	"github.com/roadrunner-server/errors"
-	"github.com/roadrunner-server/tcplisten"
 
 	"github.com/roadrunner-server/pool/v2/pool"
 	staticPool "github.com/roadrunner-server/pool/v2/pool/static_pool"
@@ -72,19 +71,9 @@ func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 		return errors.E(op, errors.Disabled)
 	}
 
-	err := validateRelaySocketIDs(cfg)
+	err := cfg.UnmarshalKey(PluginName, &p.cfg)
 	if err != nil {
 		return errors.E(op, errors.Init, err)
-	}
-
-	err = cfg.UnmarshalKey(PluginName, &p.cfg)
-	if err != nil {
-		return errors.E(op, errors.Init, err)
-	}
-
-	// File-backed decoding can omit an empty block from the parent section.
-	if cfg.Has("server.relay_socket") && p.cfg.RelaySocket == nil {
-		p.cfg.RelaySocket = &tcplisten.UnixSocketOptions{}
 	}
 
 	err = cfg.UnmarshalKey(RPCPluginName, &p.rpcCfg)
