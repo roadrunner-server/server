@@ -37,7 +37,7 @@ require (
 	github.com/prometheus/procfs v0.22.0 // indirect
 	github.com/roadrunner-server/events v1.0.1 // indirect
 	github.com/roadrunner-server/goridge/v4 v4.0.0-beta.3 // indirect
-	github.com/roadrunner-server/tcplisten v1.5.2 // indirect
+	github.com/roadrunner-server/tcplisten v1.6.0 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
 	github.com/spf13/afero v1.15.0 // indirect

@@ -14,6 +14,7 @@ import (
 
 	"slices"
 
+	"github.com/roadrunner-server/tcplisten"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 )
@@ -44,8 +45,8 @@ func (c *Cfg) Overwrite(_ map[string]any) error {
 	return nil
 }
 
-func (c *Cfg) Has(_ string) bool {
-	return true
+func (c *Cfg) Has(name string) bool {
+	return c.v.IsSet(name)
 }
 
 func (c *Cfg) GracefulTimeout() time.Duration {
@@ -378,13 +379,24 @@ func TestConfigInitDefaults(t *testing.T) {
 		cfg := &Config{Command: []string{"php", "worker.php"}}
 		require.NoError(t, cfg.InitDefaults())
 		require.Equal(t, "pipes", cfg.Relay)
+		require.Nil(t, cfg.RelaySocket)
 	})
 
-	t.Run("relay is left alone when set", func(t *testing.T) {
-		cfg := &Config{Command: []string{"php", "worker.php"}, Relay: "tcp://127.0.0.1:9999"}
-		require.NoError(t, cfg.InitDefaults())
-		require.Equal(t, "tcp://127.0.0.1:9999", cfg.Relay)
-	})
+	for _, tc := range []struct {
+		name  string
+		relay string
+	}{
+		{name: "explicit pipes", relay: "pipes"},
+		{name: "TCP relay", relay: "tcp://127.0.0.1:9999"},
+		{name: "UNIX relay", relay: "unix://relay.sock"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg := &Config{Command: []string{"php", "worker.php"}, Relay: tc.relay}
+			require.NoError(t, cfg.InitDefaults())
+			require.Equal(t, tc.relay, cfg.Relay)
+			require.Nil(t, cfg.RelaySocket)
+		})
+	}
 
 	t.Run("on_init command is required", func(t *testing.T) {
 		cfg := &Config{Command: []string{"php", "worker.php"}, OnInit: &InitConfig{}}
@@ -408,6 +420,34 @@ func TestConfigInitDefaults(t *testing.T) {
 		require.NoError(t, cfg.InitDefaults())
 		require.Equal(t, time.Second*5, cfg.OnInit.ExecTimeout)
 	})
+}
+
+func TestConfigRelaySocketInvalid(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("UNIX socket attributes are not supported on Windows.")
+	}
+
+	for _, tc := range []struct {
+		name    string
+		relay   string
+		options tcplisten.UnixSocketOptions
+		wantErr string
+	}{
+		{name: "default pipes", wantErr: "filesystem unix:// address"},
+		{name: "explicit pipes", relay: "pipes", wantErr: "filesystem unix:// address"},
+		{name: "TCP", relay: "tcp://127.0.0.1:0", wantErr: "filesystem unix:// address"},
+		{name: "empty UNIX path", relay: "unix://", wantErr: "filesystem unix:// address"},
+		{name: "invalid mode", relay: "unix://relay.sock", options: tcplisten.UnixSocketOptions{Mode: "600"}, wantErr: "invalid unix socket mode"},
+		{name: "negative UID", relay: "unix://relay.sock", options: tcplisten.UnixSocketOptions{UID: new(-1)}, wantErr: "invalid unix socket uid"},
+		{name: "negative GID", relay: "unix://relay.sock", options: tcplisten.UnixSocketOptions{GID: new(-1)}, wantErr: "invalid unix socket gid"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg := &Config{Command: []string{"php", "worker.php"}, Relay: tc.relay, RelaySocket: &tc.options}
+			err := cfg.InitDefaults()
+			require.ErrorContains(t, err, "server.relay_socket")
+			require.ErrorContains(t, err, tc.wantErr)
+		})
+	}
 }
 
 // TestCommandWriteForwardsToLogger covers the io.Writer the on_init command's

@@ -77,6 +77,10 @@
 				"tcp://127.0.0.1:6002",
 				"unix:///var/run/rr.sock"
 			]
+		},
+		"relay_socket": {
+			"$ref": "https://raw.githubusercontent.com/roadrunner-server/tcplisten/v1.6.0/schema.json",
+			"description": "Permissions and ownership for the filesystem UNIX relay socket. These values do not set worker credentials."
 		}
 	},
 	"$defs": {

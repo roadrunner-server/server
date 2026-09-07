@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/roadrunner-server/errors"
+	"github.com/roadrunner-server/tcplisten"
 )
 
 // Config All config (.rr.yaml)
@@ -23,6 +24,8 @@ type Config struct {
 	// "pipes", "tcp://:6001", "unix://rr.sock"
 	// This config section must not change on re-configuration.
 	Relay string `mapstructure:"relay"`
+	// RelaySocket sets permissions and ownership for a filesystem UNIX relay socket.
+	RelaySocket *tcplisten.UnixSocketOptions `mapstructure:"relay_socket"`
 }
 
 type InitConfig struct {
@@ -52,6 +55,10 @@ func (cfg *Config) InitDefaults() error {
 
 	if cfg.Relay == "" {
 		cfg.Relay = "pipes"
+	}
+
+	if err := cfg.RelaySocket.Validate(cfg.Relay); err != nil {
+		return errors.E(errors.Op("server.relay_socket"), err)
 	}
 
 	if cfg.OnInit != nil {

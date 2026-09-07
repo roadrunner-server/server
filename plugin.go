@@ -116,7 +116,7 @@ func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 
 	p.preparedEnvs = append(p.preparedEnvs, RrVersion+"="+cfg.RRVersion())
 
-	p.factory, err = initFactory(p.log, p.cfg.Relay)
+	p.factory, err = initFactory(p.log, p.cfg.Relay, p.cfg.RelaySocket)
 	if err != nil {
 		return errors.E(op, err)
 	}
