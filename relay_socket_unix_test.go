@@ -3,6 +3,7 @@
 package server
 
 import (
+	"context"
 	"io"
 	"log/slog"
 	"net"
@@ -52,8 +53,8 @@ func TestInitRelaySocketPermissions(t *testing.T) {
 			p := &Plugin{}
 			log := slog.New(slog.NewTextHandler(io.Discard, nil))
 			require.NoError(t, p.Init(cfg, NewTestLogger(log)))
-			closeFactory := sync.OnceValue(p.factory.Close)
-			t.Cleanup(func() { require.NoError(t, closeFactory()) })
+			stop := sync.OnceValue(func() error { return p.Stop(context.Background()) })
+			t.Cleanup(func() { require.NoError(t, stop()) })
 
 			info, err := os.Stat(path)
 			require.NoError(t, err)
@@ -70,7 +71,7 @@ func TestInitRelaySocketPermissions(t *testing.T) {
 			require.Contains(t, p.preparedEnvs, RrRPC+"=tcp://127.0.0.1:6001")
 			require.Contains(t, p.preparedEnvs, "SOCKET_TEST=value")
 
-			require.NoError(t, closeFactory())
+			require.NoError(t, stop())
 			_, err = os.Lstat(path)
 			require.ErrorIs(t, err, os.ErrNotExist)
 			dialer := net.Dialer{Timeout: time.Second}
