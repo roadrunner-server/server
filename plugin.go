@@ -23,7 +23,6 @@ type Plugin struct {
 
 	cfg          *Config
 	rpcCfg       *RPCConfig
-	preparedCmd  []string
 	preparedEnvs []string
 
 	ids *ids
@@ -102,8 +101,6 @@ func (p *Plugin) Init(cfg Configurer, log NamedLogger) error {
 		}
 	}
 
-	p.preparedCmd = prepareCmd(p.cfg.Command)
-
 	p.preparedEnvs = append(os.Environ(), RrRelay+"="+p.cfg.Relay)
 	if p.rpcCfg != nil && p.rpcCfg.Listen != "" {
 		p.preparedEnvs = append(p.preparedEnvs, RrRPC+"="+p.rpcCfg.Listen)
@@ -160,9 +157,9 @@ func (p *Plugin) Stop(_ context.Context) error {
 func (p *Plugin) NewWorker(ctx context.Context, env map[string]string) (*worker.Process, error) {
 	const op = errors.Op("server_plugin_new_worker")
 
-	spawnCmd := p.cmdFactory(env)
+	spawnCmd := p.customCmd(env)
 
-	w, err := p.factory.SpawnWorkerWithContext(ctx, spawnCmd())
+	w, err := p.factory.SpawnWorkerWithContext(ctx, spawnCmd(nil))
 	if err != nil {
 		return nil, errors.E(op, err)
 	}
@@ -175,7 +172,7 @@ func (p *Plugin) NewPool(ctx context.Context, cfg *pool.Config, env map[string]s
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	pl, err := staticPool.NewPool(ctx, pool.Command(p.customCmd(env)), p.factory, cfg, p.log, staticPool.WithQueueSize(cfg.MaxQueueSize))
+	pl, err := staticPool.NewPool(ctx, p.customCmd(env), p.factory, cfg, p.log, staticPool.WithQueueSize(cfg.MaxQueueSize))
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +184,7 @@ func (p *Plugin) NewPoolWithOptions(ctx context.Context, cfg *pool.Config, env m
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	pl, err := staticPool.NewPool(ctx, pool.Command(p.customCmd(env)), p.factory, cfg, p.log, options...)
+	pl, err := staticPool.NewPool(ctx, p.customCmd(env), p.factory, cfg, p.log, options...)
 	if err != nil {
 		return nil, err
 	}

@@ -84,16 +84,10 @@ func (b *command) Write(data []byte) (int, error) {
 // create command for the process
 func (b *command) createProcess(env map[string]string, cmd []string) *exec.Cmd {
 	cmdArgs := prepareCmd(cmd)
-
-	var execCmd *exec.Cmd
-	if len(cmdArgs) == 1 {
-		execCmd = exec.CommandContext(context.Background(), cmdArgs[0])
-	} else {
-		execCmd = exec.CommandContext(context.Background(), cmdArgs[0], cmdArgs[1:]...)
-	}
+	execCmd := exec.CommandContext(context.Background(), cmdArgs[0], cmdArgs[1:]...)
 
 	// OS env first, then config env so that user config takes precedence.
-	execCmd.Env = append(os.Environ(), execCmd.Env...)
+	execCmd.Env = os.Environ()
 
 	// set env variables from the config
 	for k, v := range env {
