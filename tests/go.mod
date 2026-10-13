@@ -10,7 +10,7 @@ require (
 	github.com/roadrunner-server/errors v1.6.0
 	github.com/roadrunner-server/logger/v6 v6.0.0-beta.4
 	github.com/roadrunner-server/metrics/v6 v6.0.0-beta.7
-	github.com/roadrunner-server/pool/v2 v2.0.0-beta.1
+	github.com/roadrunner-server/pool/v2 v2.0.0
 	github.com/roadrunner-server/rpc/v6 v6.0.0-beta.6
 	github.com/roadrunner-server/server/v6 v6.0.0
 	github.com/stretchr/testify v1.12.1
@@ -36,7 +36,7 @@ require (
 	github.com/prometheus/common v0.72.0 // indirect
 	github.com/prometheus/procfs v0.22.0 // indirect
 	github.com/roadrunner-server/events v1.0.1 // indirect
-	github.com/roadrunner-server/goridge/v4 v4.0.0-beta.3 // indirect
+	github.com/roadrunner-server/goridge/v4 v4.0.0 // indirect
 	github.com/roadrunner-server/tcplisten v1.6.1 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
