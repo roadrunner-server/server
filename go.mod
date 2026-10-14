@@ -2,11 +2,11 @@ module github.com/roadrunner-server/server/v6
 
 go 1.27
 
-toolchain go1.27.1
+toolchain go1.27.2
 
 require (
 	github.com/roadrunner-server/errors v1.6.0
-	github.com/roadrunner-server/pool/v2 v2.0.0-beta.1
+	github.com/roadrunner-server/pool/v2 v2.0.0
 	github.com/roadrunner-server/tcplisten v1.6.1
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.12.1
@@ -24,9 +24,9 @@ require (
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.4.3 // indirect
-	github.com/roadrunner-server/events v1.0.1 // indirect
-	github.com/roadrunner-server/goridge/v4 v4.0.0-beta.3 // indirect
-	github.com/rogpeppe/go-internal v1.14.1 // indirect
+	github.com/roadrunner-server/events v1.1.0 // indirect
+	github.com/roadrunner-server/goridge/v4 v4.0.0 // indirect
+	github.com/rogpeppe/go-internal v1.16.0 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
 	github.com/spf13/afero v1.15.0 // indirect
@@ -37,7 +37,7 @@ require (
 	github.com/tklauser/numcpus v0.12.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/sync v0.23.0 // indirect
-	golang.org/x/sys v0.48.0 // indirect
-	golang.org/x/text v0.42.0 // indirect
+	golang.org/x/sync v0.24.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
+	golang.org/x/text v0.43.0 // indirect
 )
